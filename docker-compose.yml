@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  melancia-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: melancia-ai-rag
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PYTHONPATH=/app
+    volumes:
+      # Mount data directories for persistence
+      - ./vector_db:/app/vector_db
+      - ./melanc.ia:/app/melanc.ia
+      - ./logs:/app/logs
+      # Mount source code for development (comment out for production)
+      - ./agent:/app/agent
+      - ./etl_and_scrapping:/app/etl_and_scrapping
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import agent; print('Health check passed')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - melancia-network
+
+  # Optional: Jupyter notebook for ETL and analysis
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: melancia-jupyter
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-melancia123}
+    volumes:
+      - ./etl_and_scrapping:/app/etl_and_scrapping
+      - ./melanc.ia:/app/melanc.ia
+      - ./vector_db:/app/vector_db
+    ports:
+      - "8888:8888"
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    restart: unless-stopped
+    networks:
+      - melancia-network
+    profiles:
+      - dev
+
+  # Optional: Redis for caching (future enhancement)
+  redis:
+    image: redis:7-alpine
+    container_name: melancia-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - melancia-network
+    profiles:
+      - cache
+
+  # Optional: PostgreSQL for structured data (future enhancement)
+  postgres:
+    image: postgres:15-alpine
+    container_name: melancia-postgres
+    environment:
+      - POSTGRES_DB=melancia
+      - POSTGRES_USER=melancia
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-melancia123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - melancia-network
+    profiles:
+      - database
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  melancia-network:
+    driver: bridge
