@@ -10,18 +10,19 @@ from pathlib import Path
 import sys
 import time
 
-# Adicionar o diretório pai ao path para importar módulos
-sys.path.append(str(Path(__file__).parent.parent))
+# Adicionar o diretório src ao path para importar módulos
+src_dir = Path(__file__).parent.parent
+sys.path.append(str(src_dir))
 
-from etl_and_scrapping.scraper import BlogScraper
-from etl_and_scrapping.analyzer import ContentAnalyzer
+from etl.scraper import BlogScraper
+from etl.analyzer import ContentAnalyzer
 
 # Configurar logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('etl_pipeline.log'),
+        logging.FileHandler('logs/etl_pipeline.log', encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -32,8 +33,8 @@ def run_etl_pipeline(
     scrape: bool = True,
     analyze: bool = True,
     max_articles: int = None,
-    input_dir: str = "../melanc.ia/Input/Blog",
-    output_dir: str = "../melanc.ia/Output"
+    input_dir: str = "data/input",
+    output_dir: str = "data/output"
 ):
     """
     Executa o pipeline ETL completo
@@ -47,7 +48,7 @@ def run_etl_pipeline(
     """
     
     start_time = time.time()
-    logger.info("🚀 Iniciando pipeline ETL...")
+    logger.info("Iniciando pipeline ETL...")
     
     results = {
         'scraping': None,
@@ -57,21 +58,21 @@ def run_etl_pipeline(
     
     # Etapa 1: Scraping
     if scrape:
-        logger.info("📥 Etapa 1: Scraping do blog...")
+        logger.info("Etapa 1: Scraping do blog...")
         try:
             scraper = BlogScraper(output_dir=input_dir)
             scraping_results = scraper.scrape_all(max_articles=max_articles)
             results['scraping'] = scraping_results
             
-            logger.info(f"✅ Scraping concluído: {scraping_results['successful']} arquivos criados")
+            logger.info(f"Scraping concluido: {scraping_results['successful']} arquivos criados")
             
         except Exception as e:
-            logger.error(f"❌ Erro no scraping: {e}")
+            logger.error(f"Erro no scraping: {e}")
             return results
     
     # Etapa 2: Análise
     if analyze:
-        logger.info("📊 Etapa 2: Análise de conteúdo...")
+        logger.info("Etapa 2: Analise de conteudo...")
         try:
             analyzer = ContentAnalyzer(input_dir=input_dir)
             analyzer.load_files()
@@ -85,10 +86,10 @@ def run_etl_pipeline(
             
             results['analysis'] = analysis_stats
             
-            logger.info(f"✅ Análise concluída: {analysis_stats['total_files']} arquivos analisados")
+            logger.info(f"Analise concluida: {analysis_stats['total_files']} arquivos analisados")
             
         except Exception as e:
-            logger.error(f"❌ Erro na análise: {e}")
+            logger.error(f"Erro na analise: {e}")
             return results
     
     # Tempo total
@@ -96,12 +97,12 @@ def run_etl_pipeline(
     results['total_time'] = total_time
     
     # Relatório final
-    logger.info("📋 RELATÓRIO FINAL DO PIPELINE ETL")
+    logger.info("RELATORIO FINAL DO PIPELINE ETL")
     logger.info("=" * 50)
     
     if results['scraping']:
         scraping = results['scraping']
-        logger.info(f"📥 Scraping:")
+        logger.info(f"Scraping:")
         logger.info(f"   - URLs processadas: {scraping['total_urls']}")
         logger.info(f"   - Sucessos: {scraping['successful']}")
         logger.info(f"   - Falhas: {scraping['failed']}")
@@ -109,13 +110,13 @@ def run_etl_pipeline(
     
     if results['analysis']:
         analysis = results['analysis']
-        logger.info(f"📊 Análise:")
+        logger.info(f"Analise:")
         logger.info(f"   - Arquivos analisados: {analysis['total_files']}")
         logger.info(f"   - Total de palavras: {analysis['total_words']:,}")
-        logger.info(f"   - Média de palavras por arquivo: {analysis['avg_words_per_file']:.1f}")
+        logger.info(f"   - Media de palavras por arquivo: {analysis['avg_words_per_file']:.1f}")
     
-    logger.info(f"⏱️ Tempo total: {total_time:.2f} segundos")
-    logger.info("✅ Pipeline ETL concluído com sucesso!")
+    logger.info(f"Tempo total: {total_time:.2f} segundos")
+    logger.info("Pipeline ETL concluido com sucesso!")
     
     return results
 
@@ -141,10 +142,10 @@ Exemplos de uso:
     parser.add_argument('--max-articles', '-m', type=int,
                        help='Número máximo de artigos para processar')
     parser.add_argument('--input-dir', '-i',
-                       default='../melanc.ia/Input/Blog',
+                       default='data/input',
                        help='Diretório de entrada para arquivos Markdown')
     parser.add_argument('--output-dir', '-o',
-                       default='../melanc.ia/Output',
+                       default='data/output',
                        help='Diretório de saída para relatórios')
     
     args = parser.parse_args()
@@ -165,12 +166,12 @@ Exemplos de uso:
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False, default=str)
         
-        logger.info(f"📄 Relatório final salvo em: {report_file}")
+        logger.info(f"Relatorio final salvo em: {report_file}")
         
     except KeyboardInterrupt:
-        logger.info("⏹️ Pipeline interrompido pelo usuário")
+        logger.info("Pipeline interrompido pelo usuario")
     except Exception as e:
-        logger.error(f"❌ Erro fatal no pipeline: {e}")
+        logger.error(f"Erro fatal no pipeline: {e}")
         sys.exit(1)
 
 

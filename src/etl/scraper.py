@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('scraper.log'),
+        logging.FileHandler('logs/scraper.log', encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -30,7 +30,7 @@ class BlogScraper:
     """Scraper para coletar conteúdo do blog Conecta Ads"""
     
     def __init__(self, base_url: str = "https://www.conectaads.com.br/conteudos/", 
-                 output_dir: str = "../melanc.ia/Input/Blog"):
+                 output_dir: str = "data/input"):
         self.base_url = base_url
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -54,7 +54,7 @@ class BlogScraper:
     
     def collect_urls(self) -> Set[str]:
         """Coleta todas as URLs do blog paginando até a última página"""
-        logger.info("🔍 Iniciando coleta de URLs do blog...")
+        logger.info("Iniciando coleta de URLs do blog...")
         
         blog_urls = set()
         page = 1
@@ -62,7 +62,7 @@ class BlogScraper:
         
         while True:
             url = f'{self.base_url}page/{page}/' if page > 1 else self.base_url
-            logger.info(f"📄 Acessando página {page}: {url}")
+            logger.info(f"Acessando pagina {page}: {url}")
             
             try:
                 response = self.session.get(url, timeout=10)
@@ -80,28 +80,28 @@ class BlogScraper:
                 ]
                 
                 blog_urls.update(new_links)
-                logger.info(f"✅ Encontrados {len(new_links)} links na página {page}")
+                logger.info(f"Encontrados {len(new_links)} links na pagina {page}")
                 
                 # Verificar se há próxima página
                 next_page_link = soup.find('a', href=lambda href: href and "/page/" in href)
                 if not next_page_link:
-                    logger.info("⏹️ Última página encontrada")
+                    logger.info("Ultima pagina encontrada")
                     break
                 
                 page += 1
                 time.sleep(1)  # Rate limiting
                 
             except requests.RequestException as e:
-                logger.error(f"❌ Erro ao acessar página {page}: {e}")
+                logger.error(f"Erro ao acessar pagina {page}: {e}")
                 break
         
-        logger.info(f"🔗 Total de {len(blog_urls)} URLs encontrados em {pages_accessed} páginas")
+        logger.info(f"Total de {len(blog_urls)} URLs encontrados em {pages_accessed} paginas")
         return blog_urls
     
     def extract_content(self, url: str) -> Optional[dict]:
         """Extrai conteúdo de uma URL específica"""
         try:
-            logger.info(f"🌐 Acessando URL: {url}")
+            logger.info(f"Acessando URL: {url}")
             response = self.session.get(url, timeout=15)
             response.raise_for_status()
             
@@ -110,7 +110,7 @@ class BlogScraper:
             # Extrair título
             title = soup.find('h1') or soup.find('h2')
             if not title:
-                logger.warning(f"❌ Título não encontrado para {url}")
+                logger.warning(f"Titulo nao encontrado para {url}")
                 return None
             
             title_text = title.get_text(strip=True)
@@ -131,7 +131,7 @@ class BlogScraper:
                     break
             
             if not content_div:
-                logger.warning(f"⚠️ Conteúdo não encontrado em {url}")
+                logger.warning(f"Conteudo nao encontrado em {url}")
                 return None
             
             # Extrair elementos de conteúdo
@@ -170,10 +170,10 @@ class BlogScraper:
             }
             
         except requests.RequestException as e:
-            logger.error(f"❌ Erro ao processar {url}: {e}")
+            logger.error(f"Erro ao processar {url}: {e}")
             return None
         except Exception as e:
-            logger.error(f"❌ Erro inesperado ao processar {url}: {e}")
+            logger.error(f"Erro inesperado ao processar {url}: {e}")
             return None
     
     def save_content(self, content_data: dict) -> bool:
@@ -190,23 +190,23 @@ class BlogScraper:
                 f.write(f"**Palavras:** {content_data['word_count']}\n")
                 f.write(f"**Extraído em:** {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             
-            logger.info(f"✅ Conteúdo salvo: {filepath}")
+            logger.info(f"Conteudo salvo: {filepath}")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro ao salvar arquivo: {e}")
+            logger.error(f"Erro ao salvar arquivo: {e}")
             return False
     
     def scrape_all(self, max_articles: Optional[int] = None) -> dict:
         """Executa o scraping completo do blog"""
-        logger.info("🚀 Iniciando scraping completo do blog...")
+        logger.info("Iniciando scraping completo do blog...")
         
         # Coletar URLs
         urls = self.collect_urls()
         
         if max_articles:
             urls = list(urls)[:max_articles]
-            logger.info(f"📝 Limitando a {max_articles} artigos")
+            logger.info(f"Limitando a {max_articles} artigos")
         
         # Processar cada URL
         results = {
@@ -217,10 +217,10 @@ class BlogScraper:
             'files_created': []
         }
         
-        logger.info(f"📝 Iniciando processamento de {len(urls)} artigos...")
+        logger.info(f"Iniciando processamento de {len(urls)} artigos...")
         
         for i, url in enumerate(urls, 1):
-            logger.info(f"📌 Processando artigo {i}/{len(urls)}")
+            logger.info(f"Processando artigo {i}/{len(urls)}")
             
             content_data = self.extract_content(url)
             if content_data:
@@ -237,8 +237,8 @@ class BlogScraper:
             time.sleep(2)
         
         # Log final
-        logger.info(f"✨ Processo concluído!")
-        logger.info(f"📊 Estatísticas:")
+        logger.info(f"Processo concluido!")
+        logger.info(f"Estatisticas:")
         logger.info(f"   - URLs processadas: {results['total_urls']}")
         logger.info(f"   - Sucessos: {results['successful']}")
         logger.info(f"   - Falhas: {results['failed']}")
@@ -251,7 +251,7 @@ def main():
     """Função principal para execução via linha de comando"""
     parser = argparse.ArgumentParser(description='Scraper do blog Conecta Ads')
     parser.add_argument('--output-dir', '-o', 
-                       default='../melanc.ia/Input/Blog',
+                       default='data/input',
                        help='Diretório de saída para os arquivos Markdown')
     parser.add_argument('--max-articles', '-m', type=int,
                        help='Número máximo de artigos para processar')
@@ -285,12 +285,12 @@ def main():
             for title in results['files_created']:
                 f.write(f"- {title}\n")
         
-        logger.info(f"📋 Relatório salvo em: {report_file}")
+        logger.info(f"Relatorio salvo em: {report_file}")
         
     except KeyboardInterrupt:
-        logger.info("⏹️ Processo interrompido pelo usuário")
+        logger.info("Processo interrompido pelo usuario")
     except Exception as e:
-        logger.error(f"❌ Erro fatal: {e}")
+        logger.error(f"Erro fatal: {e}")
 
 
 if __name__ == "__main__":

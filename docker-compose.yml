@@ -11,17 +11,16 @@ services:
       - PYTHONPATH=/app
     volumes:
       # Mount data directories for persistence
-      - ./vector_db:/app/vector_db
-      - ./melanc.ia:/app/melanc.ia
+      - ./data:/app/data
       - ./logs:/app/logs
       # Mount source code for development (comment out for production)
-      - ./agent:/app/agent
-      - ./etl_and_scrapping:/app/etl_and_scrapping
+      - ./src:/app/src
     ports:
       - "8000:8000"
+    command: python -m src.agent.web_interface
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import agent; print('Health check passed')"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -39,9 +38,8 @@ services:
       - JUPYTER_ENABLE_LAB=yes
       - JUPYTER_TOKEN=${JUPYTER_TOKEN:-melancia123}
     volumes:
-      - ./etl_and_scrapping:/app/etl_and_scrapping
-      - ./melanc.ia:/app/melanc.ia
-      - ./vector_db:/app/vector_db
+      - ./src:/app/src
+      - ./data:/app/data
     ports:
       - "8888:8888"
     command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
