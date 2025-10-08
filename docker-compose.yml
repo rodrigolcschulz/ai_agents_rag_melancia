@@ -28,7 +28,7 @@ services:
     networks:
       - melancia-network
 
-  # Optional: Jupyter notebook for ETL and analysis
+  # Jupyter notebook for ETL and analysis
   jupyter:
     build:
       context: .
@@ -46,10 +46,8 @@ services:
     restart: unless-stopped
     networks:
       - melancia-network
-    profiles:
-      - dev
 
-  # Optional: Redis for caching (future enhancement)
+  # Redis for caching
   redis:
     image: redis:7-alpine
     container_name: melancia-redis
@@ -60,10 +58,8 @@ services:
     restart: unless-stopped
     networks:
       - melancia-network
-    profiles:
-      - cache
 
-  # Optional: PostgreSQL for structured data (future enhancement)
+  # PostgreSQL for structured data
   postgres:
     image: postgres:15-alpine
     container_name: melancia-postgres
@@ -78,8 +74,6 @@ services:
     restart: unless-stopped
     networks:
       - melancia-network
-    profiles:
-      - database
 
 volumes:
   redis_data:

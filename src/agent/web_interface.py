@@ -5,11 +5,11 @@ import gradio as gr
 import os
 import sys
 from typing import List, Tuple
-import config
-from prompt import get_prompt_template
-from memory import get_memory, save_memory
-from retriever import carregar_markdowns, get_retriever, indexar_novos_markdowns
-from utils import garantir_pasta_log, registrar_log, is_relevant
+from . import config
+from .prompt import get_prompt_template
+from .memory import get_memory, save_memory
+from .retriever import carregar_markdowns, get_retriever, indexar_novos_markdowns
+from .utils import garantir_pasta_log, registrar_log, is_relevant
 from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 

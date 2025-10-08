@@ -7,6 +7,7 @@ Gera estatísticas e insights sobre o conteúdo coletado
 import os
 import glob
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
@@ -442,5 +443,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import numpy as np  # Import necessário para polyfit
     main()

@@ -3,8 +3,8 @@ from langchain_openai import OpenAIEmbeddings  # Importação atualizada
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain.schema import Document  # Importar Document para criar documentos corretamente
-from config import EMBEDDING_MODEL
-from keywords import CONTEXT_KEYWORDS
+from .config import EMBEDDING_MODEL
+from .keywords import CONTEXT_KEYWORDS
 import glob
 import os
 
