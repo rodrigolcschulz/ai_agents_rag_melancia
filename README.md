@@ -1,6 +1,6 @@
-# 🍉 MelâncIA - AI RAG Agent for Retail Media
+# 🍉 MelancIA - AI RAG Agent for Retail Media
 
-**Jou** é um agente de IA especializado em Retail Media e E-commerce, desenvolvido pela Conecta Ads.
+**MelancIA** é um agente de IA especializado em Retail Media e E-commerce, desenvolvido pela Conecta Ads.
 
 ## 🚀 Funcionalidades
 
@@ -13,6 +13,7 @@
 ## 🛠️ Instalação
 
 ### Pré-requisitos
+
 - Python 3.8+
 - OpenAI API Key
 
@@ -38,17 +39,21 @@ echo "OPENAI_API_KEY=sua_api_key_aqui" > .env
 ## 🎯 Como Usar
 
 ### Interface Web
+
 ```bash
 python src/agent/web_interface.py
 ```
+
 Acesse: http://localhost:8000
 
 ### Terminal
+
 ```bash
 python src/agent/main.py
 ```
 
 ### Pipeline ETL
+
 ```bash
 # Scraping + Análise
 python src/etl/run_etl.py
@@ -68,7 +73,7 @@ docker compose up -d
 
 ## 📁 Estrutura do Projeto
 
-```
+```text
 melancia-ai-rag/
 ├── src/
 │   ├── agent/          # Agente RAG principal
@@ -76,14 +81,37 @@ melancia-ai-rag/
 ├── data/
 │   ├── input/          # Arquivos markdown
 │   ├── output/         # Relatórios e análises
-│   └── vector_db/      # Base vetorial
+│   └── vector_db/      # Base vetorial (ChromaDB)
 ├── logs/               # Logs do sistema
 └── requirements.txt    # Dependências
 ```
 
-## 🤖 Sobre o Jou
+## 📝 Sistema de Logs
 
-Jou é especializado em:
+O MelancIA mantém um sistema completo de logs:
+
+- **`logs/chat_history.txt`** - Histórico completo de conversas
+- **`data/output/chat_history.pkl`** - Memória da conversa (últimas 5 interações)
+- **`logs/etl_pipeline.log`** - Logs do pipeline ETL
+- **`logs/scraper.log`** - Logs do web scraping
+- **`logs/vector_db.log`** - Logs da base vetorial
+
+> **Nota**: Todos os arquivos de log são ignorados pelo Git (`.gitignore`)
+
+## 🧠 Como Funciona o RAG
+
+O MelancIA utiliza uma arquitetura RAG (Retrieval-Augmented Generation) sofisticada:
+
+1. **📚 Base de Conhecimento**: Conteúdo do blog Conecta Ads em formato Markdown
+2. **🔍 Embeddings**: Transforma o conteúdo em vetores usando OpenAI embeddings
+3. **💾 Banco Vetorial**: Armazena os vetores no ChromaDB para busca rápida
+4. **🤖 LLM**: GPT-4o-mini gera respostas baseadas no contexto recuperado
+5. **🔄 Memória**: Mantém contexto das últimas 5 conversas
+6. **🎯 Filtros**: Só responde perguntas relevantes sobre Retail Media
+
+## 🤖 Sobre o MelancIA
+
+MelancIA é especializado em:
 - **Retail Media** e estratégias de anúncios
 - **E-commerce** e marketplaces (Mercado Livre, Shopee)
 - **Métricas de performance** (ACOS, ROAS, CTR, CPC)
@@ -92,12 +120,14 @@ Jou é especializado em:
 
 ## 📊 Tecnologias
 
-- **LangChain** - Framework RAG
-- **OpenAI GPT-4** - Modelo de linguagem
+- **LangChain** - Framework RAG e orquestração
+- **OpenAI GPT-4o-mini** - Modelo de linguagem
+- **OpenAI Embeddings** - Modelo de embeddings (text-embedding-3-small)
 - **ChromaDB** - Base de dados vetorial
-- **Gradio** - Interface web
+- **Gradio** - Interface web interativa
 - **BeautifulSoup** - Web scraping
 - **Pandas** - Análise de dados
+- **Docker** - Containerização
 
 ## 📄 Licença
 
