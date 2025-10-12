@@ -27,7 +27,7 @@ AGENT_NAME = "Jou, a MelâncIA"
 
 # Palavras-chave para contexto
 CONTEXT_KEYWORDS = [
-    "retail media", "e-commerce", "marketplace", "mercado livre", "shopee",
+    "retail media", "e-commerce", "marketplace", "mercado livre",
     "anúncios", "campanhas", "performance", "acos", "roas", "ctr", "cpc",
     "conversão", "vendas", "produtos", "categoria", "palavras-chave",
     "lances", "orçamento", "impressões", "cliques", "logística",

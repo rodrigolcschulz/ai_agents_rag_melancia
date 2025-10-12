@@ -162,7 +162,7 @@ class MelanciaWebInterface:
             
             **MelancIA** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
             
-            💡 **Dicas**: Pergunte sobre ACOS, ROAS, campanhas no Mercado Livre, Shopee, estratégias de anúncios, etc.
+            💡 **Dicas**: Pergunte sobre ACOS, ROAS, campanhas no Mercado Livre, estratégias de anúncios, etc.
             """)
             
             # Chat interface

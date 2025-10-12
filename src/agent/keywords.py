@@ -5,7 +5,7 @@ CONTEXT_KEYWORDS = [
     
     # E-commerce e Marketplaces
     "e-commerce", "ecommerce", "marketplace", "mercado livre", "ml", "meli",
-    "shopee", "shopee ads", "e commerce",
+    "e commerce",
     
     # Tipos de Anúncios
     "product ads", "pads", "produtos patrocinados", "anúncios patrocinados",
