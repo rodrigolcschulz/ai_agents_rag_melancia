@@ -1,6 +1,6 @@
-# 🍉 MelancIA - AI RAG Agent for Retail Media
+# 🍉 MelancIA - AI RAG Agente de Product Ads
 
-**MelancIA** é um agente de IA especializado em Retail Media e E-commerce, desenvolvido pela Conecta Ads.
+**MelancIA** é um agente de IA especializado em Product Ads e E-commerce, desenvolvido pela Conecta Ads.
 
 ## 🚀 Funcionalidades
 
