@@ -1,10 +1,10 @@
 from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
-import config
-from prompt import get_prompt_template
-from memory import get_memory, save_memory
-from retriever import carregar_markdowns, get_retriever, indexar_novos_markdowns
-from utils import garantir_pasta_log, registrar_log, is_relevant
+from . import config
+from .prompt import get_prompt_template
+from .memory import get_memory, save_memory
+from .retriever import carregar_markdowns, get_retriever, indexar_novos_markdowns
+from .utils import garantir_pasta_log, registrar_log, is_relevant
 import os
 
 def main():
@@ -14,10 +14,10 @@ def main():
 
     # Etapa 2 - Indexação
     docs = carregar_markdowns(config.INPUT_MARKDOWN)
-    indexar_novos_markdowns(docs, config.DB_DIR, config.EMBEDDING_MODEL)
+    indexar_novos_markdowns(docs, str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
 
     # Etapa 3 - Criação do retriever e da cadeia de resposta
-    retriever = get_retriever(config.DB_DIR, config.EMBEDDING_MODEL)
+    retriever = get_retriever(str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
     
     llm = ChatOpenAI(
         model=config.MODEL_NAME,

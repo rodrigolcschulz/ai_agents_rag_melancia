@@ -1,8 +1,8 @@
 import os
 import re
 from datetime import datetime
-from keywords import CONTEXT_KEYWORDS
-import config
+from .keywords import CONTEXT_KEYWORDS
+from . import config
 
 def garantir_pasta_log(log_dir):
     os.makedirs(log_dir, exist_ok=True)

@@ -31,10 +31,10 @@ class MelanciaWebInterface:
             
             # Indexação
             docs = carregar_markdowns(config.INPUT_MARKDOWN)
-            indexar_novos_markdowns(docs, config.DB_DIR, config.EMBEDDING_MODEL)
+            indexar_novos_markdowns(docs, str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
             
             # Criação do retriever e cadeia
-            retriever = get_retriever(config.DB_DIR, config.EMBEDDING_MODEL)
+            retriever = get_retriever(str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
             
             llm = ChatOpenAI(
                 model=config.MODEL_NAME,
@@ -106,8 +106,8 @@ class MelanciaWebInterface:
             # Limpar resposta
             resposta_texto = self._limpar_resposta(resposta_texto)
             
-            # Adicionar emoji do Jou
-            resposta_final = f"Jou 🍉: {resposta_texto}"
+            # Adicionar emoji do MelancIA
+            resposta_final = f"🍉 MelancIA: {resposta_texto}"
             
             # Atualizar histórico
             history.append([message, resposta_final])
@@ -120,7 +120,7 @@ class MelanciaWebInterface:
             return "", history
             
         except Exception as e:
-            erro_msg = f"🍉 Oops! Algo deu errado: {str(e)}\n\n🎵 Tentando uma abordagem diferente..."
+            erro_msg = f"🍉 MelancIA: Oops! Algo deu errado: {str(e)}\n\n🎵 Tentando uma abordagem diferente..."
             history.append([message, erro_msg])
             return "", history
     
@@ -160,17 +160,17 @@ class MelanciaWebInterface:
             gr.Markdown("""
             # 🍉 MelâncIA - Agente de Retail Media
             
-            **Jou** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
+            **MelancIA** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
             
             💡 **Dicas**: Pergunte sobre ACOS, ROAS, campanhas no Mercado Livre, Shopee, estratégias de anúncios, etc.
             """)
             
             # Chat interface
             chatbot = gr.Chatbot(
-                label="Conversa com Jou 🍉",
+                label="Conversa com MelancIA 🍉",
                 height=500,
                 show_label=True,
-                avatar_images=("👤", "🍉"),
+                avatar_images=None,
                 bubble_full_width=False
             )
             
