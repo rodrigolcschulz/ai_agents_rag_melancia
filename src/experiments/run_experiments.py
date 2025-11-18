@@ -83,19 +83,28 @@ def run_quick_test():
     except Exception as e:
         print(f"   ✗ OpenAI não disponível: {e}")
     
-    # 2. Ollama (se estiver rodando)
-    try:
-        print("🔍 Testando Ollama...")
-        llm_ollama = MultiLLMManager.create_llm("ollama", "llama3.1:8b")
-        # Teste rápido
-        llm_ollama.invoke("test")
-        benchmark.add_model("ollama", "llama3.1:8b", llm_ollama)
-        models_to_test.append(("ollama", "llama3.1:8b"))
-        print("   ✓ Ollama configurado")
-    except Exception as e:
-        print(f"   ✗ Ollama não disponível: {e}")
+    # 2. Ollama (tenta detectar modelos disponíveis)
+    ollama_models_to_try = ["phi3:mini", "llama3.2:3b", "llama3.1:8b", "gemma2:2b"]
+    ollama_found = False
+    
+    for model_name in ollama_models_to_try:
+        try:
+            print(f"🔍 Testando Ollama ({model_name})...")
+            llm_ollama = MultiLLMManager.create_llm("ollama", model_name)
+            # Teste rápido
+            llm_ollama.invoke("test")
+            benchmark.add_model("ollama", model_name, llm_ollama)
+            models_to_test.append(("ollama", model_name))
+            print(f"   ✓ Ollama configurado com {model_name}")
+            ollama_found = True
+            break  # Usa o primeiro que encontrar
+        except Exception as e:
+            continue
+    
+    if not ollama_found:
+        print("   ✗ Nenhum modelo Ollama disponível")
         print("   💡 Instale com: curl -fsSL https://ollama.ai/install.sh | sh")
-        print("   💡 E rode: ollama pull llama3.1:8b")
+        print("   💡 E baixe: ollama pull phi3:mini")
     
     if not models_to_test:
         print("\n⚠️  Nenhum modelo disponível para teste!")
