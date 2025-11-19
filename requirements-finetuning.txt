@@ -1,0 +1,53 @@
+# 🎯 Fine-Tuning Dependencies (Google Colab com GPU)
+#
+# IMPORTANTE: Este arquivo é para uso no Google Colab ou outros ambientes com GPU NVIDIA
+# NÃO instale localmente se você não tiver GPU CUDA
+#
+# No Colab, execute:
+# !pip install -r requirements-finetuning.txt
+
+# Core Transformers & Training
+transformers>=4.36.0
+torch>=2.1.0
+accelerate>=0.25.0
+datasets>=2.16.0
+tokenizers>=0.15.0
+
+# QLoRA Essentials
+bitsandbytes>=0.41.0  # Requer GPU NVIDIA com CUDA
+peft>=0.7.0           # Parameter-Efficient Fine-Tuning
+trl>=0.7.0            # Transformer Reinforcement Learning
+
+# Training Utilities
+sentencepiece>=0.1.99
+protobuf>=3.20.0
+einops>=0.7.0
+scipy>=1.10.0
+
+# Experiment Tracking (Opcional)
+wandb>=0.16.0
+tensorboard>=2.15.0
+
+# Evaluation
+evaluate>=0.4.0
+rouge-score>=0.1.2
+bert-score>=0.3.13
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Jupyter (se não estiver usando Colab)
+ipywidgets>=8.0.0
+notebook>=7.0.0
+
+# Utilities
+tqdm>=4.65.0
+rich>=13.0.0
+python-dotenv>=1.0.0
+
+# GGUF Conversion (Opcional - para converter modelos)
+# Requer llama.cpp instalado separadamente
+# ctransformers>=0.2.0
+# llama-cpp-python>=0.2.0
+
