@@ -219,17 +219,13 @@ class ModelExporter:
             }
         
         # Criar Modelfile
-        modelfile_content = f"""# {model_name} - Fine-tuned Model
-FROM {gguf_path.absolute()}
-
-# Template
-TEMPLATE """{template}"""
-
-# System message
-SYSTEM """{system_message}"""
-
-# Parameters
-"""
+        modelfile_content = f"# {model_name} - Fine-tuned Model\n"
+        modelfile_content += f"FROM {gguf_path.absolute()}\n\n"
+        modelfile_content += "# Template\n"
+        modelfile_content += f'TEMPLATE """{template}"""\n\n'
+        modelfile_content += "# System message\n"
+        modelfile_content += f'SYSTEM """{system_message}"""\n\n'
+        modelfile_content += "# Parameters\n"
         
         for key, value in parameters.items():
             modelfile_content += f"PARAMETER {key} {value}\n"
