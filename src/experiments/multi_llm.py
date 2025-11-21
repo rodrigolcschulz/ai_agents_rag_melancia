@@ -126,7 +126,8 @@ class MultiLLMManager:
     ) -> OllamaLLM:
         """Cria LLM do Ollama (local)"""
         model = model_name or "llama3.1:8b"
-        base_url = kwargs.pop("base_url", "http://localhost:11434")
+        # Usar variável de ambiente se disponível (para Docker)
+        base_url = kwargs.pop("base_url", os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
         
         logger.info(f"Inicializando Ollama LLM: {model} @ {base_url}")
         

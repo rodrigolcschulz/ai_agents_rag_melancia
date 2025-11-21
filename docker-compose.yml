@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   melancia-ai:
     build:
@@ -9,6 +7,9 @@ services:
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PYTHONPATH=/app
+      - USE_MODEL_ROUTER=true           # Ativar Model Router (Ollama + OpenAI)
+      - OLLAMA_PERCENTAGE=0.8           # 80% Ollama (llama3.2:3b), 20% OpenAI
+      - OLLAMA_BASE_URL=http://172.16.200.49:11434  # Ollama rodando no host
     volumes:
       # Mount data directories for persistence
       - ./data:/app/data
@@ -17,8 +18,11 @@ services:
       - ./src:/app/src
     ports:
       - "8000:8000"
-    command: python -m src.agent.web_interface
+    command: python -m src.agent.web_interface_with_eval
     restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 30s
@@ -46,6 +50,43 @@ services:
     restart: unless-stopped
     networks:
       - melancia-network
+
+  # MLflow UI for experiment tracking
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: melancia-mlflow
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./data/experiments:/app/data/experiments
+    ports:
+      - "5000:5000"
+    command: mlflow ui --host 0.0.0.0 --port 5000 --backend-store-uri file:///app/mlruns
+    restart: unless-stopped
+    networks:
+      - melancia-network
+
+  # Ollama for local LLM inference (DESABILITADO - usando Ollama local da máquina)
+  # Descomente se quiser rodar Ollama dentro do Docker
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: melancia-ollama
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   ports:
+  #     - "11434:11434"
+  #   restart: unless-stopped
+  #   networks:
+  #     - melancia-network
+  #   # GPU support (uncomment if you have NVIDIA GPU)
+  #   # deploy:
+  #   #   resources:
+  #   #     reservations:
+  #   #       devices:
+  #   #         - driver: nvidia
+  #   #           count: 1
+  #   #           capabilities: [gpu]
 
   # Redis for caching
   redis:
@@ -78,6 +119,7 @@ services:
 volumes:
   redis_data:
   postgres_data:
+  # ollama_data:  # Não necessário - usando Ollama local
 
 networks:
   melancia-network:

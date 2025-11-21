@@ -17,20 +17,20 @@
 | **Model Router** | ✅ Completo | 90% - Roteamento inteligente + A/B test |
 | **Pipeline ETL** | ✅ Completo | 100% - Scraping + curadoria de dados |
 | **Docker** | ✅ Parcial | 70% - Docker Compose básico |
-| **Fine-Tuning** | ❌ Não iniciado | 0% - **CRÍTICO** |
-| **Evaluation Loops** | ❌ Não iniciado | 0% - **CRÍTICO** |
+| **Fine-Tuning** | ⏸️ Skip (desnecessário) | N/A - RAG atende + poucos dados (<200) |
+| **Evaluation Loops** | 🚧 Em progresso | 0% - **CRÍTICO (PRÓXIMO)** |
 | **CI/CD** | ❌ Não iniciado | 0% - **IMPORTANTE** |
 | **Monitoramento Produção** | ❌ Não iniciado | 0% - **IMPORTANTE** |
 | **API REST (FastAPI)** | ❌ Não iniciado | 0% - **CRÍTICO** |
 | **Testes Automatizados** | ❌ Não iniciado | 0% - **IMPORTANTE** |
 
-### 🎯 Prioridades
+### 🎯 Prioridades (ATUALIZADO - Nov 2024)
 
-**🔴 CRÍTICO (Sem isso, não atende o escopo)**
-1. Fine-Tuning de LLMs (LoRA/QLoRA)
-2. API REST com FastAPI
-3. Dataset proprietário para fine-tuning
-4. Evaluation loops automatizados
+**🔴 CRÍTICO (Próxima etapa)**
+1. ✅ ~~Fine-Tuning de LLMs~~ → **SKIP** (RAG atende + dataset pequeno <200 exemplos)
+2. 🚧 **Evaluation Loops automatizados** ← **FOCO ATUAL**
+3. API REST com FastAPI
+4. Testes automatizados do RAG
 
 **🟡 IMPORTANTE (MLOps completo)**
 5. CI/CD Pipeline
@@ -45,14 +45,63 @@
 12. Model Cards formais
 13. Dashboard de analytics
 
+### 🔄 O que são Evaluation Loops? (Foco Atual)
+
+**Evaluation Loops** são ciclos contínuos de avaliação e melhoria do sistema RAG:
+
+```
+┌─────────────────────────────────────────────┐
+│  1. Usuário faz pergunta                    │
+└────────────────┬────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────┐
+│  2. RAG responde                            │
+│     • Retrieval de documentos               │
+│     • LLM gera resposta                     │
+└────────────────┬────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────┐
+│  3. LOGGING & AVALIAÇÃO                     │
+│     • Salvar: query, response, docs, tempo  │
+│     • Calcular métricas automáticas         │
+│     • Coletar feedback (👍👎)              │
+└────────────────┬────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────┐
+│  4. ANÁLISE & MELHORIA                      │
+│     • Identificar problemas                 │
+│     • Melhorar docs/prompts                 │
+│     • Ajustar parâmetros                    │
+└────────────────┬────────────────────────────┘
+                 │
+                 └────► LOOP (melhoria contínua)
+```
+
+**Benefícios:**
+- ✅ Medir qualidade objetivamente
+- ✅ Identificar gaps de conhecimento
+- ✅ Melhorar continuamente baseado em dados reais
+- ✅ Detectar degradação de performance
+- ✅ Priorizar melhorias pelo impacto
+
 ---
 
 ## 🔴 1. GAPS CRÍTICOS (Bloqueadores)
 
-### 1.1 Fine-Tuning de LLMs ❌
+### 1.1 Fine-Tuning de LLMs ⏸️ SKIP (DECISÃO: Nov 2024)
 
-**Status**: Não implementado  
-**Impacto**: CRÍTICO - É o core do escopo
+**Status**: Decidido por NÃO implementar agora  
+**Razão**: 
+- ✅ RAG atual já atende bem as necessidades
+- ❌ Dataset muito pequeno (~107 exemplos, necessário 500-1000+)
+- ❌ Fine-tuning com poucos dados causa catastrophic forgetting e alucinações
+- ✅ RAG é mais fácil de manter e atualizar
+- 💡 **Decisão**: Focar em melhorar RAG + Evaluation Loops
+
+**Impacto da decisão**: Baixo - RAG resolve o problema adequadamente
 
 **O que falta:**
 
@@ -457,14 +506,71 @@ class DatasetValidator:
 
 ---
 
-### 1.4 Evaluation Loops Automatizados ❌
+### 1.4 Evaluation Loops Automatizados 🚧 **[FOCO ATUAL]**
 
-**Status**: Tem benchmark manual, mas não loops automatizados  
-**Impacto**: CRÍTICO - Necessário para validar fine-tuning
+**Status**: Iniciando implementação (Nov 2024)  
+**Impacto**: CRÍTICO - Necessário para validar e melhorar continuamente o RAG
 
-**O que falta:**
+**Por que é importante:**
+- ✅ Medir qualidade das respostas do RAG
+- ✅ Coletar feedback de usuários (👍👎)
+- ✅ Identificar gaps de conhecimento
+- ✅ Melhorar documentos e prompts iterativamente
+- ✅ Monitorar performance em produção
 
-#### A) Framework de Avaliação
+**O que implementar (foco em RAG):**
+
+#### A) Sistema de Logging de Interações
+```python
+# src/evaluation/interaction_logger.py (CRIAR)
+class InteractionLogger:
+    """Loga todas interações: pergunta, resposta, docs recuperados, feedback"""
+    
+    def log_interaction(
+        self,
+        query: str,
+        response: str,
+        retrieved_docs: List[str],
+        model_used: str,
+        latency: float,
+        user_id: Optional[str] = None
+    ) -> str:
+        """Loga interação e retorna interaction_id"""
+        
+    def log_feedback(
+        self,
+        interaction_id: str,
+        feedback: str,  # "positive", "negative", "neutral"
+        comment: Optional[str] = None
+    ):
+        """Loga feedback do usuário"""
+```
+
+#### B) Métricas Automáticas do RAG
+```python
+# src/evaluation/rag_metrics.py (CRIAR)
+class RAGEvaluator:
+    """Avalia qualidade do RAG automaticamente"""
+    
+    def evaluate_retrieval(self, query: str, retrieved_docs: List[str]) -> Dict:
+        """
+        Métricas de retrieval:
+        - Relevância dos documentos
+        - Diversidade
+        - Coverage
+        """
+        
+    def evaluate_generation(self, query: str, response: str, docs: List[str]) -> Dict:
+        """
+        Métricas de geração:
+        - Faithfulness (resposta baseada nos docs?)
+        - Answer relevancy (responde a pergunta?)
+        - Context recall
+        - Context precision
+        """
+```
+
+#### C) Framework de Avaliação
 ```python
 # src/evaluation/
 ├── evaluator.py        # Classe principal
@@ -480,15 +586,28 @@ class DatasetValidator:
     └── report_generator.py
 ```
 
-#### B) Métricas de Avaliação
-Implementar:
-- ✅ Já tem: Qualidade e relevância básicas
-- ❌ ROUGE-L (overlap de n-gramas)
-- ❌ BERTScore (similaridade semântica)
-- ❌ Exact Match
-- ❌ F1 Score
-- ❌ Perplexity
-- ❌ Human evaluation score
+#### D) Métricas RAG (RAGAS Framework)
+Implementar usando RAGAS (RAG Assessment):
+
+**Métricas de Retrieval:**
+- ❌ **Context Precision**: Docs relevantes estão bem ranqueados?
+- ❌ **Context Recall**: Recuperou todos docs relevantes?
+- ❌ **Context Relevancy**: Docs são relevantes para a pergunta?
+
+**Métricas de Geração:**
+- ❌ **Faithfulness**: Resposta está baseada nos docs recuperados?
+- ❌ **Answer Relevancy**: Resposta realmente responde a pergunta?
+- ❌ **Answer Correctness**: Comparado com ground truth
+
+**Métricas de Latência:**
+- ❌ Tempo de retrieval
+- ❌ Tempo de geração
+- ❌ Tempo total (E2E)
+
+**Métricas de Usuário:**
+- ❌ Taxa de feedback positivo (👍)
+- ❌ Taxa de feedback negativo (👎)
+- ❌ Perguntas sem resposta adequada
 
 #### C) Benchmark Proprietário
 Criar dataset de teste com respostas corretas:
@@ -575,11 +694,49 @@ class ModelEvaluator:
         pass
 ```
 
-#### E) Avaliação Contínua
-- ❌ Avaliação após cada fine-tuning
+#### E) 📋 Plano de Implementação - Evaluation Loops
+
+**FASE 1: Logging Básico (1-2 dias)**
+1. ❌ Criar `InteractionLogger` 
+2. ❌ Salvar logs em JSON/SQLite
+3. ❌ Logar: query, response, docs, modelo, latência
+4. ❌ Integrar com RAG existente
+
+**FASE 2: Feedback de Usuários (1 dia)**
+1. ❌ Endpoint para feedback (👍👎)
+2. ❌ UI simples para coletar feedback
+3. ❌ Armazenar feedback com interaction_id
+
+**FASE 3: Métricas Automáticas (2-3 dias)**
+1. ❌ Implementar RAGAS metrics
+2. ❌ Calcular faithfulness e answer relevancy
+3. ❌ Dashboard com métricas
+
+**FASE 4: Análise e Insights (1-2 dias)**
+1. ❌ Identificar perguntas frequentes sem boa resposta
+2. ❌ Detectar gaps de documentação
+3. ❌ Gerar relatórios de qualidade
+
+**FASE 5: Loop de Melhoria Contínua (ongoing)**
+1. ❌ Revisar feedback negativo semanalmente
+2. ❌ Adicionar/melhorar documentos
+3. ❌ Ajustar prompts
+4. ❌ A/B test de mudanças
+
+**Total estimado**: 5-8 dias de desenvolvimento
+
+#### F) Ferramentas Recomendadas
+- **RAGAS**: Framework para métricas RAG
+- **LangSmith**: Observabilidade e tracing
+- **Weights & Biases**: Dashboard de métricas
+- **SQLite/PostgreSQL**: Armazenar logs
+- **Streamlit**: Dashboard interno
+
+#### G) Avaliação Contínua (adaptado para RAG)
+- ❌ Avaliação diária automatizada
 - ❌ Comparação com baseline
-- ❌ Detecção de regressão
-- ❌ Alertas se performance cair
+- ❌ Detecção de degradação de qualidade
+- ❌ Alertas se métricas caírem abaixo de threshold
 
 ```python
 # Pipeline de avaliação automatizado

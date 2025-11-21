@@ -9,6 +9,9 @@
 - **Interface web** interativa com Gradio
 - **Pipeline ETL** completo para processamento de dados
 - **Análise de conteúdo** e geração de relatórios
+- **Fine-Tuning de LLMs** com QLoRA (4-bit quantization)
+- **Evaluation Loops** automatizados com múltiplas métricas
+- **MLflow** para tracking de experimentos
 
 ## 🛠️ Instalação
 
@@ -253,6 +256,82 @@ mlflow ui --port 5000
 - Métricas de performance (latência, qualidade)
 - Comparação entre runs
 - Versionamento de modelos
+
+## 🎓 Fine-Tuning e Evaluation Loops
+
+### Workflow Completo
+
+```
+1. Preparar Dados     → notebooks/prepare_finetuning_data.ipynb
+2. Fine-Tuning        → notebooks/fine_tuning_qlora_colab.ipynb
+3. Evaluation         → notebooks/evaluate_model.ipynb
+```
+
+### 1️⃣ Preparar Dataset
+
+```bash
+# Preparar dados no formato correto
+jupyter notebook notebooks/prepare_finetuning_data.ipynb
+
+# Output: training_dataset/ com splits train/test
+```
+
+### 2️⃣ Fine-Tuning (Google Colab)
+
+```bash
+# No Google Colab com GPU T4 (gratuito)
+1. Abra: notebooks/fine_tuning_qlora_colab.ipynb
+2. Configure GPU: Runtime > Change runtime type > T4 GPU
+3. Execute células para:
+   - Carregar modelo com quantização 4-bit
+   - Aplicar LoRA adapters
+   - Treinar com seu dataset
+   - Salvar modelo fine-tunado
+4. Baixe modelo treinado
+```
+
+**Otimizado para T4 (15GB VRAM)**:
+- Batch size: 1
+- Gradient accumulation: 16
+- Max sequence length: 1024
+- LoRA rank: 8
+
+### 3️⃣ Evaluation Loops
+
+```bash
+# Avaliar modelo fine-tunado vs base
+jupyter notebook notebooks/evaluate_model.ipynb
+
+# Métricas automáticas:
+# - ROUGE (overlap de n-gramas)
+# - BLEU (qualidade de geração)
+# - BERTScore (similaridade semântica)
+# - Comparação lado a lado
+# - Visualizações e relatórios
+```
+
+**Classe Reutilizável**:
+
+```python
+from src.evaluation.evaluator import ModelEvaluator
+
+# Criar evaluator
+evaluator = ModelEvaluator(model, tokenizer, "meu-modelo")
+
+# Avaliar dataset
+results = evaluator.evaluate_dataset(test_data)
+
+# Gerar relatório
+report = evaluator.generate_report(results)
+```
+
+### 📚 Documentação Detalhada
+
+- [📖 Guia Completo de Fine-Tuning](docs/FINE_TUNING_GUIDE.md)
+- [📊 Guia de Evaluation Loops](docs/EVALUATION_GUIDE.md)
+- [🔬 MLOps Report](docs/MLOPS_REPORT.md)
+
+---
 
 ## 📊 Tecnologias
 

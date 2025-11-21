@@ -150,7 +150,7 @@ class ModelRouter:
             logger.info("Carregando modelo Ollama...")
             self._ollama_model = MultiLLMManager.create_llm(
                 "ollama",
-                "phi3:mini"  # Pode ser configurável
+                "llama3.2:3b"  # Mais rápido e eficiente que phi3:mini
             )
         return self._ollama_model
     
@@ -188,10 +188,10 @@ class ModelRouter:
         if force_provider:
             return RoutingDecision(
                 provider=force_provider,
-                model_name="phi3:mini" if force_provider == "ollama" else "gpt-4o-mini",
+                model_name="llama3.2:3b" if force_provider == "ollama" else "gpt-4o-mini",
                 reason="forced_by_user",
                 estimated_cost=0.0 if force_provider == "ollama" else 0.0001,
-                estimated_latency=150.0 if force_provider == "ollama" else 4.0
+                estimated_latency=5.0 if force_provider == "ollama" else 4.0  # llama3.2:3b é rápido
             )
         
         # 2. Usuários premium sempre OpenAI
@@ -219,10 +219,10 @@ class ModelRouter:
         if user_id and self.feature_flags.should_use_ollama(user_id):
             return RoutingDecision(
                 provider="ollama",
-                model_name="phi3:mini",
+                model_name="llama3.2:3b",
                 reason="a_b_test_ollama",
                 estimated_cost=0.0,
-                estimated_latency=150.0
+                estimated_latency=5.0  # llama3.2:3b é muito mais rápido
             )
         
         # 5. Fallback para OpenAI
