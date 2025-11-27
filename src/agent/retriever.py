@@ -30,7 +30,23 @@ def indexar_novos_markdowns(docs, persist_directory, model_name=EMBEDDING_MODEL)
         print(f"Aviso: {model_name} não é um modelo de embedding válido. Usando text-embedding-ada-002")
         model_name = "text-embedding-ada-002"
     
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    # Configurar splitter com separadores mais adequados para markdown
+    # Prioriza quebras de seção (##), depois parágrafos, depois linhas
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,  # Aumentado para capturar mais contexto
+        chunk_overlap=200,  # Aumentado overlap para manter continuidade
+        separators=[
+            "\n## ",  # Seções de markdown
+            "\n### ",  # Subseções
+            "\n\n",  # Parágrafos
+            "\n",  # Linhas
+            ". ",  # Sentenças
+            " ",  # Palavras
+            ""  # Caracteres
+        ],
+        length_function=len,
+        is_separator_regex=False
+    )
     
     # Criar documentos Document corretamente com metadados
     documentos = []
@@ -42,6 +58,8 @@ def indexar_novos_markdowns(docs, persist_directory, model_name=EMBEDDING_MODEL)
     
     # Dividir os documentos em chunks
     textos = splitter.split_documents(documentos)
+    
+    print(f"   📄 Total de chunks criados: {len(textos)}")
     
     # Criar embeddings com o modelo correto
     embeddings = OpenAIEmbeddings(model=model_name)

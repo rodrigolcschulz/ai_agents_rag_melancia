@@ -8,7 +8,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PYTHONPATH=/app
       - USE_MODEL_ROUTER=true           # Ativar Model Router (Ollama + OpenAI)
-      - OLLAMA_PERCENTAGE=0.8           # 80% Ollama (llama3.2:3b), 20% OpenAI
+      - OLLAMA_PERCENTAGE=1.0           # 100% Ollama (llama3.2:3b otimizado)
       - OLLAMA_BASE_URL=http://172.16.200.49:11434  # Ollama rodando no host
     volumes:
       # Mount data directories for persistence

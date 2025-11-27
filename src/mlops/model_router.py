@@ -147,10 +147,12 @@ class ModelRouter:
     def ollama_model(self) -> OllamaLLM:
         """Lazy loading do modelo Ollama"""
         if self._ollama_model is None:
-            logger.info("Carregando modelo Ollama...")
+            logger.info("Carregando modelo Ollama otimizado...")
             self._ollama_model = MultiLLMManager.create_llm(
                 "ollama",
-                "llama3.2:3b"  # Mais rápido e eficiente que phi3:mini
+                "llama3.2:3b",  # Mais rápido e eficiente que phi3:mini
+                temperature=0.3,  # Baixa temperatura = mais focado no contexto
+                max_tokens=500,   # Respostas mais concisas
             )
         return self._ollama_model
     

@@ -84,7 +84,8 @@ def run_quick_test():
         print(f"   ✗ OpenAI não disponível: {e}")
     
     # 2. Ollama (tenta detectar modelos disponíveis)
-    ollama_models_to_try = ["phi3:mini", "llama3.2:3b", "llama3.1:8b", "gemma2:2b"]
+    # Removido phi3:mini (muito lento: ~171s)
+    ollama_models_to_try = ["llama3.2:3b", "llama3.1:8b", "gemma2:2b"]
     ollama_found = False
     
     for model_name in ollama_models_to_try:
@@ -97,7 +98,7 @@ def run_quick_test():
             models_to_test.append(("ollama", model_name))
             print(f"   ✓ Ollama configurado com {model_name}")
             ollama_found = True
-            break  # Usa o primeiro que encontrar
+            # Removido break: testar TODOS os modelos disponíveis
         except Exception as e:
             continue
     

@@ -1,0 +1,76 @@
+{
+  "results": [
+    {
+      "model_name": "gpt-4o-mini",
+      "provider": "openai",
+      "question": "O que \u00e9 Retail Media?",
+      "answer": "Retail media refere-se a um tipo de publicidade que ocorre em plataformas de varejo, onde os anunciantes podem promover seus produtos diretamente para os consumidores que est\u00e3o fazendo compras. Isso pode incluir an\u00fancios em sites de e-commerce, aplicativos de varejo ou at\u00e9 mesmo em lojas f\u00edsicas. O objetivo do retail media \u00e9 alcan\u00e7ar os consumidores no momento em que eles est\u00e3o mais propensos a comprar, aproveitando o ambiente de compra para direcionar tr\u00e1fego e vendas para produtos espec\u00edficos.",
+      "latency_seconds": 4.740760803222656,
+      "tokens_used": 130,
+      "cost_usd": 1.95e-05,
+      "quality_score": 1.0,
+      "relevance_score": 0.6666666666666666,
+      "error": null
+    },
+    {
+      "model_name": "gpt-4o-mini",
+      "provider": "openai",
+      "question": "Quais s\u00e3o as principais m\u00e9tricas de performance em campanhas de an\u00fancios?",
+      "answer": "N\u00e3o sei.",
+      "latency_seconds": 3.331205368041992,
+      "tokens_used": 20,
+      "cost_usd": 3e-06,
+      "quality_score": 0.2,
+      "relevance_score": 0.0,
+      "error": null
+    },
+    {
+      "model_name": "gpt-4o-mini",
+      "provider": "openai",
+      "question": "Como funciona o ACOS no Mercado Livre?",
+      "answer": "Desculpe, n\u00e3o sei como funciona o ACOS no Mercado Livre.",
+      "latency_seconds": 2.9114863872528076,
+      "tokens_used": 23,
+      "cost_usd": 3.45e-06,
+      "quality_score": 0.2,
+      "relevance_score": 0.8333333333333334,
+      "error": null
+    },
+    {
+      "model_name": "phi3:mini",
+      "provider": "ollama",
+      "question": "O que \u00e9 Retail Media?",
+      "answer": "Para utilizar a rede social do Mercado Livre (ACOS) para aumentar as vendas em seu neg\u00f3cio de varejo online ou f\u00edsico, voc\u00ea pode seguir estes passos e considera\u00e7\u00f5es importantes:\n\n1. Defina objetivos claros e mensur\u00e1veis antes de iniciar campanhas no ACOS do Mercado Livre. Lembre-se dos objetivos que visam um retorno sobre o investimento (ROI) entre 5 a 15%. Isso ajudar\u00e1 voc\u00ea a monitorar seu desempenho e fazer altera\u00e7\u00f5es necess\u00e1rias para maximizar as vendas.\n2. Use campanhas pagas, como publicidade paga por cliques (PPC), an\u00fancios de produtos ou promo\u00e7\u00f5es exclusivas no Mercado Livre para atrair clientes interessados em comprar seus itens e aumentar a visibilidade do seu neg\u00f3cio nas plataformas.\n3. Compartilhe conte\u00fado relevante, informativo e visualmente atrativo sobre os produtos que voc\u00ea est\u00e1 vendendo no Mercado Livre para promover as suas ofertas e construir uma boa presen\u00e7a digital em rela\u00e7\u00e3o ao seu p\u00fablico-alvo espec\u00edfico.\n4. Utilize o ACOS do Mercado Livre como um canal de marketing complementar, n\u00e3o substituindo outras ferramentas importantes que j\u00e1 est\u00e3o funcionando para voc\u00ea ou podem ser usadas no futuro (como a presen\u00e7a em redes sociais, emails e SEO).\n5. Acompanhe os indicadores-chave do desempenho das campanhas de retail media nessa plataforma especificamente:\n   - Taxa m\u00e9dia ponderada por cliques (CTR): \u00e9 a propor\u00e7\u00e3o entre o n\u00famero total de cliques e as impress\u00f5es no an\u00fancio. Uma taxa alta indica que seu p\u00fablico-alvo est\u00e1 interessado em explorar suas ofertas, mas uma baixa pode significar que voc\u00ea precisa melhorar sua mensagem ou visual do an\u00fancio para atrair mais clientes potenciais.\n   - Taxa de convers\u00e3o: \u00e9 a propor\u00e7\u00e3o entre o n\u00famero total de cliques e as vendas feitas por esses cliques. Essa taxa mede diretamente se suas campanhas est\u00e3o levando \u00e0s compras desejadas, portanto \u00e9 um indicador-chave para saber como est\u00e1 funcionando seu investimento em publicidade no Mercado Livre.\n   - Taxa de custo por clique (CPC): \u00c9 o valor que voc\u00ea gasta para cada clique recebido ao longo do tempo, seja atrav\u00e9s da PPC ou an\u00fancios pagos. Esse indicador ajuda a medir efic\u00e1cia dos seus investimentos em publicidade no Mercado Livre.\n   - Taxa de convers\u00e3o por pesquisa: \u00c9 o n\u00famero total de cliques dividido pelo n\u00famero total de impress\u00f5es nas pesquisas do ACOS, que indica se voc\u00ea est\u00e1 alcan\u00e7ando seu p\u00fablico-alvo efetivamente atrav\u00e9s das suas campanhas.\n   - Taxa m\u00e9dia ponderada por compras: \u00c9 o valor m\u00e9dio gasto em cada compra realizada no Mercado Livre. Esse indicador ajuda a medir se seus an\u00fancios est\u00e3o gerando vendas com base nos valores dos produtos que voc\u00ea est\u00e1 comercializando.\n   - Taxa de retorno sobre investimento (ROI): \u00c9 o lucro obtido pelo seu neg\u00f3cio em rela\u00e7\u00e3o ao custo total das campanhas no ACOS do Mercado Livre, calculado como: ROI = Lucro / Custo Total * 100%. Esse indicador mede se suas campanhas est\u00e3o gerando lucros positivos e \u00e9 uma m\u00e9trica cr\u00edtica para avaliar o desempenho das campanias de retail media no Mercado Livre.\n6. Al\u00e9m disso, utilize as ferramentas oferecidas pelo ACOS do Mercado Livre (como an\u00e1lise detalhada dos cliques e vendas por produto) para identificar quaisquer tend\u00eancias ou padr\u00f5es que possam ajud\u00e1-lo a melhorar suas estrat\u00e9gias de publicidade no futuro.\n7. Controle os custos das campanhas pagas, monitorando o custo m\u00e9dio por clique e as taxas CPC para garantir que voc\u00ea n\u00e3o est\u00e1 gastando mais do que seu or\u00e7amento permitiria sem obter um retorno significativo nas vendas no Mercado Livre.\n8. Finalmente, teste diferentes estrat\u00e9gias de publicidade pagada (como an\u00fancios por cliques e produtos) para encontrar o melhor modelo para alcan\u00e7ar seus objetivos espec\u00edficos em termos de visibilidade do seu neg\u00f3cio no Mercado Livre e aumento das vendas.\n\nO ACOS \u00e9 uma plataforma que permite a voc\u00ea criar campanhas pagadas com an\u00fancios personalizados para promover seus produtos ou servi\u00e7os diretamente ao p\u00fablico-alvo do Mercado Livre, permitindo que eles vejam e comprem facilmente. Ao utilizar as estrat\u00e9gias mencionadas acima e monitorar os indicadores-chave de desempenho das campanhas no ACOS, voc\u00ea poder\u00e1 aumentar suas vendas online ou em seu neg\u00f3cio f\u00edsico com sucesso atrav\u00e9s do Mercado Livre.",
+      "latency_seconds": 240.29659485816956,
+      "tokens_used": 1051,
+      "cost_usd": 0.0,
+      "quality_score": 0.8500000000000001,
+      "relevance_score": 0.6666666666666666,
+      "error": null
+    },
+    {
+      "model_name": "phi3:mini",
+      "provider": "ollama",
+      "question": "Quais s\u00e3o as principais m\u00e9tricas de performance em campanhas de an\u00fancios?",
+      "answer": "As principais m\u00e9tricas de efic\u00e1cia nas campanhas de Performance do Mercado Livre incluem ACOS (Custo M\u00e9dio Publicit\u00e1rio), que \u00e9 o custo m\u00e9dio por clique, a Taxa de Cliques (CTR) ou taxa na qual os an\u00fancios s\u00e3o clicados pelos usu\u00e1rios e tamb\u00e9m contagens diretas dos clicks nos seus an\u00fancios.",
+      "latency_seconds": 106.30070638656616,
+      "tokens_used": 90,
+      "cost_usd": 0.0,
+      "quality_score": 0.65,
+      "relevance_score": 0.75,
+      "error": null
+    },
+    {
+      "model_name": "phi3:mini",
+      "provider": "ollama",
+      "question": "Como funciona o ACOS no Mercado Livre?",
+      "answer": "A COMS \u00e9 uma m\u00e9trica essencial que ajuda a entender o retorno do investimento (ROI) das campanhas de publicidade pagas no Mercado Livre. Para aumentar as vendas, tanto online quanto em um neg\u00f3cio f\u00edsico direcionando produtos atrav\u00e9s da plataforma, \u00e9 importante criar an\u00fancios cativantes e relevantes para o p\u00fablico-alvo que se encaixem nos nichos de mercado do seu produto.\n\nPara calcular o ACOS no Mercado Livre:\n1. Some todos os custos totais da publicidade, incluindo taxas pagas por cliques e outros gastos com marketing direcionado para promover seus produtos espec\u00edficos; isso inclui\u00e1-lo em todas as campanhas que voc\u00ea tenha feito no mercado.\n2. Some as receitas obtidas como resultado das campanhas de publicidade, sejam elas online ou f\u00edsicas (como por exemplo, vendas aumentadas devido \u00e0 promo\u00e7\u00e3o).\n3. Divida o custo total da publicidade pelas receitas e depois multiplique por 100 para obter a ACOS como percentual:\n   \\[ ACOS = \\left( \\frac{Custo Total de Publicidade}{Receita} \\right) \\times 1 endou as seguintes informa\u00e7\u00f5es sobre o neg\u00f3cio que voc\u00ea est\u00e1 tentando aumentar suas vendas atrav\u00e9s do Mercado Livre. \u00c9 poss\u00edvel calcular a ACOS e usar essa m\u00e9trica para fazer altera\u00e7\u00f5es em sua estrat\u00e9gia de publicidade, como:\n   - Identificar o melhor momento ou hor\u00e1rio da semana para exibir seus an\u00fancios (por exemplo, dias \u00fateis versus finais de semana).\n   - Selecionar os perfis demogr\u00e1ficos mais adequados no Mercado Livre que tenham maior probabilidade de se interessarem pelo seu produto.\n   - Ajustar o custo por clique (CPC) para otimizar as campanhas, visando uma taxa CPC acess\u00edvel e justa em rela\u00e7\u00e3o ao ROI esperado das vendas aumentadas.\n   - Observar quais tipos de an\u00fancios ou mensagens publicit\u00e1rias s\u00e3o mais eficazes no Mercado Livre para impulsionar as compras, seja por meio da intera\u00e7\u00e3o direta com o conte\u00fado (clics) ou indica\u00e7\u00f5es sociais.\n   - Monitorar a evolu\u00e7\u00e3o das vendas ao longo do tempo em rela\u00e7\u00e3o \u00e0 publicidade investida no Mercado Livre para fazer asjustes necess\u00e1rios nas campanhas e continuamente otimizar o custo por clique (CPC) com base nos resultados.\n   - Al\u00e9m disso, considere combinar a estrat\u00e9gia de marketing do Mercado Livre em parcerias ou colabora\u00e7\u00f5es para maximizar seu alcance no mercado e aumentar as taxas CPC sem custos adicionais ao neg\u00f3cio.\n\nAo utilizar o ACOS como uma ferramenta cr\u00edtica, voc\u00ea pode tomar decis\u00f5es informadas sobre seus investimentos em publicidade pagada para maximizar a efic\u00e1cia das campanhas do Mercado Livre na promo\u00e7\u00e3o de vendas online ou f\u00edsicas.",
+      "latency_seconds": 169.19168543815613,
+      "tokens_used": 641,
+      "cost_usd": 0.0,
+      "quality_score": 1.0,
+      "relevance_score": 0.6666666666666666,
+      "error": null
+    }
+  ]
+}
