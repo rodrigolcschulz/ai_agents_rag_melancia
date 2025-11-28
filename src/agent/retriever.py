@@ -92,7 +92,7 @@ def carregar_db_existente(persist_directory, model_name=EMBEDDING_MODEL):
     db = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
     return db
 
-def get_retriever(persist_directory, model_name=EMBEDDING_MODEL, k=4):
+def get_retriever(persist_directory, model_name=EMBEDDING_MODEL, k=6):
     """Cria um retriever a partir do banco de dados existente"""
     db = carregar_db_existente(persist_directory, model_name)
     return db.as_retriever(search_kwargs={"k": k})

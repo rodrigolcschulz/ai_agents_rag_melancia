@@ -46,8 +46,8 @@ def populate_vector_database(input_dir="data/input", vector_db_dir=None):
         logger.error(f"❌ Diretório de entrada não encontrado: {input_dir}")
         return False
     
-    # Contar arquivos Markdown
-    markdown_files = list(input_path.glob("*.md"))
+    # Contar arquivos Markdown (busca recursiva em subpastas)
+    markdown_files = list(input_path.glob("**/*.md"))
     if not markdown_files:
         logger.error(f"❌ Nenhum arquivo Markdown encontrado em {input_dir}")
         return False
@@ -55,9 +55,9 @@ def populate_vector_database(input_dir="data/input", vector_db_dir=None):
     logger.info(f"📁 Encontrados {len(markdown_files)} arquivos Markdown")
     
     try:
-        # Carregar documentos
+        # Carregar documentos (busca recursiva)
         logger.info("📖 Carregando documentos...")
-        docs = carregar_markdowns(str(input_path / "*.md"))
+        docs = carregar_markdowns(str(input_path / "**" / "*.md"))
         logger.info(f"✅ {len(docs)} documentos carregados com sucesso")
         
         # Criar diretório do banco vetorial se não existir

@@ -30,7 +30,7 @@ class BlogScraper:
     """Scraper para coletar conteúdo do blog Conecta Ads"""
     
     def __init__(self, base_url: str = "https://www.conectaads.com.br/conteudos/", 
-                 output_dir: str = "data/input"):
+                 output_dir: str = "data/input/blog_conecta"):
         self.base_url = base_url
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -251,7 +251,7 @@ def main():
     """Função principal para execução via linha de comando"""
     parser = argparse.ArgumentParser(description='Scraper do blog Conecta Ads')
     parser.add_argument('--output-dir', '-o', 
-                       default='data/input',
+                       default='data/input/blog_conecta',
                        help='Diretório de saída para os arquivos Markdown')
     parser.add_argument('--max-articles', '-m', type=int,
                        help='Número máximo de artigos para processar')

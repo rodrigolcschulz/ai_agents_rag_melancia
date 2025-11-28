@@ -415,7 +415,7 @@ class MelanciaWithEvaluation:
             
             **MelancIA** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
             
-            💡 **Dicas**: Pergunte sobre ACOS, ROAS, campanhas no Mercado Livre, estratégias de anúncios, etc.
+            💡 **Dicas**: Pergunte sobre ACOS, campanhas no Mercado Livre, Product Ads, estratégias de anúncios, otimização de performance, etc.
             
             🔄 **Novo**: Sistema de feedback integrado - ajude a melhorar as respostas!
             """)

@@ -201,7 +201,7 @@ Mede se os documentos recuperados são relevantes.
 ## 🚧 Próximos Passos
 
 - [ ] Dashboard Streamlit para visualizações
-- [ ] Alertas automáticos (email/Slack) se qualidade cair
+- [ ] Alertas automáticos (email) se qualidade cair
 - [ ] A/B testing de prompts/parâmetros
 - [ ] LLM-based evaluation (mais preciso)
 - [ ] Relatórios semanais automáticos

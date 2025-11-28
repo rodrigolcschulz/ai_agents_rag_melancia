@@ -14,7 +14,7 @@ import time
 src_dir = Path(__file__).parent.parent
 sys.path.append(str(src_dir))
 
-from etl.scraper import BlogScraper
+from etl.scraper_blog_conecta import BlogScraper
 from etl.analyzer import ContentAnalyzer
 
 # Configurar logging
@@ -33,7 +33,7 @@ def run_etl_pipeline(
     scrape: bool = True,
     analyze: bool = True,
     max_articles: int = None,
-    input_dir: str = "data/input",
+    input_dir: str = "data/input/blog_conecta",
     output_dir: str = "data/output"
 ):
     """
@@ -142,7 +142,7 @@ Exemplos de uso:
     parser.add_argument('--max-articles', '-m', type=int,
                        help='Número máximo de artigos para processar')
     parser.add_argument('--input-dir', '-i',
-                       default='data/input',
+                       default='data/input/blog_conecta',
                        help='Diretório de entrada para arquivos Markdown')
     parser.add_argument('--output-dir', '-o',
                        default='data/output',
