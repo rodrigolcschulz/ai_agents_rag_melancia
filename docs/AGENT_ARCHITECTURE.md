@@ -1,6 +1,6 @@
 # 📁 Estrutura do Folder `src/agent/`
 
-Este documento explica a função de cada arquivo no diretório `src/agent/` do projeto MelâncIA.
+Este documento explica a função de cada arquivo no diretório `src/agent/` do projeto MelancIA.
 
 ---
 
@@ -93,7 +93,7 @@ Funções principais:
 **📝 TEMPLATE DE PROMPTS**
 
 Define o template de instrução para o LLM:
-- Personalidade do agente (MelâncIA)
+- Personalidade do agente (MelancIA)
 - Instruções sobre como responder
 - Como usar o contexto recuperado
 - Tom de voz e estilo de resposta

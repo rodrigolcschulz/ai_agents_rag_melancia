@@ -289,9 +289,62 @@ class InteractionLogger:
         cursor.execute("SELECT COUNT(*) FROM interactions")
         stats["total_interactions"] = cursor.fetchone()[0]
         
-        # Average latency
+        # Average latency (geral)
         cursor.execute("SELECT AVG(latency_seconds) FROM interactions")
         stats["avg_latency"] = cursor.fetchone()[0] or 0
+        
+        # Latency stats por provider (SEM PERCENTILE_CONT)
+        cursor.execute("""
+            SELECT 
+                provider,
+                COUNT(*) as count,
+                AVG(latency_seconds) as avg_latency,
+                MIN(latency_seconds) as min_latency,
+                MAX(latency_seconds) as max_latency
+            FROM interactions 
+            WHERE provider IS NOT NULL
+            GROUP BY provider
+        """)
+        stats["latency_by_provider"] = {}
+        for row in cursor.fetchall():
+            provider = row[0]
+            stats["latency_by_provider"][provider] = {
+                "count": row[1],
+                "avg": row[2],
+                "min": row[3],
+                "max": row[4]
+            }
+            
+            # Calcular percentis manualmente para cada provider
+            cursor.execute("""
+                SELECT latency_seconds 
+                FROM interactions 
+                WHERE provider = ?
+                ORDER BY latency_seconds
+            """, (provider,))
+            
+            latencies = [r[0] for r in cursor.fetchall()]
+            if latencies:
+                n = len(latencies)
+                stats["latency_by_provider"][provider]["p50"] = latencies[int(n * 0.50)] if n > 0 else 0
+                stats["latency_by_provider"][provider]["p95"] = latencies[int(n * 0.95)] if n > 1 else latencies[0]
+                stats["latency_by_provider"][provider]["p99"] = latencies[int(n * 0.99)] if n > 1 else latencies[0]
+        
+        # Latency últimas 24h
+        cursor.execute("""
+            SELECT AVG(latency_seconds) 
+            FROM interactions 
+            WHERE datetime(timestamp) > datetime('now', '-1 day')
+        """)
+        stats["avg_latency_24h"] = cursor.fetchone()[0] or 0
+        
+        # Slow queries (> 10s)
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM interactions 
+            WHERE latency_seconds > 10.0
+        """)
+        stats["slow_queries_count"] = cursor.fetchone()[0]
         
         # Feedback counts
         cursor.execute("""
@@ -314,6 +367,15 @@ class InteractionLogger:
             LIMIT 5
         """)
         stats["top_models"] = dict(cursor.fetchall())
+        
+        # Provider distribution
+        cursor.execute("""
+            SELECT provider, COUNT(*) as count
+            FROM interactions
+            WHERE provider IS NOT NULL
+            GROUP BY provider
+        """)
+        stats["provider_distribution"] = dict(cursor.fetchall())
         
         conn.close()
         return stats

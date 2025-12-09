@@ -1,5 +1,5 @@
 """
-Interface web Gradio para o agente MelâncIA com Evaluation Loops integrado.
+Interface web Gradio para o agente MelancIA com Evaluation Loops integrado.
 
 Adiciona:
 - Logging automático de todas interações
@@ -14,6 +14,8 @@ import sys
 import time
 from typing import List, Tuple, Dict, Optional
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+import threading
 
 from . import config
 from .prompt import get_prompt_template
@@ -97,7 +99,12 @@ class MelanciaWithEvaluation:
                 print("✅ Usando banco vetorial existente")
             
             # Criação do retriever
-            self.retriever = get_retriever(str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
+            self.retriever = get_retriever(
+                str(config.VECTOR_DB_DIR), 
+                config.EMBEDDING_MODEL,
+                k=config.RETRIEVER_K,
+                search_type=config.RETRIEVER_SEARCH_TYPE
+            )
             
             # Criar QA chains (com ou sem router)
             if self.use_router:
@@ -205,25 +212,41 @@ class MelanciaWithEvaluation:
                 qa_chain = self.qa_chains[decision.provider]
                 
                 print(f"🔀 Roteado para: {decision.provider}::{decision.model_name} (motivo: {decision.reason})")
-            else:
-                qa_chain = self.qa_chain
-            
-            # Processar com o agente
-            resultado = qa_chain.invoke({"question": message})
-            latency = time.time() - start_time
-            
-            # Verificar fallback por timeout (se usando router)
-            if self.use_router and latency > 15.0 and provider_used == "ollama":
-                print(f"⚠️  Ollama demorou {latency:.2f}s, usando OpenAI como fallback...")
-                self.model_router.stats["fallbacks"] += 1
                 
-                # Tentar com OpenAI
-                start_time = time.time()
-                qa_chain = self.qa_chains["openai"]
+                # Se for Ollama, usar timeout proativo
+                if provider_used == "ollama":
+                    timeout_seconds = 15.0
+                    resultado = None
+                    
+                    # Executar com timeout usando ThreadPoolExecutor
+                    with ThreadPoolExecutor(max_workers=1) as executor:
+                        future = executor.submit(qa_chain.invoke, {"question": message})
+                        try:
+                            resultado = future.result(timeout=timeout_seconds)
+                            latency = time.time() - start_time
+                            print(f"✅ Ollama respondeu em {latency:.2f}s")
+                        except FuturesTimeoutError:
+                            latency = time.time() - start_time
+                            print(f"⚠️  Ollama timeout após {timeout_seconds}s - Fallback para OpenAI...")
+                            self.model_router.stats["fallbacks"] += 1
+                            
+                            # Fallback para OpenAI
+                            start_time = time.time()
+                            qa_chain = self.qa_chains["openai"]
+                            resultado = qa_chain.invoke({"question": message})
+                            latency = time.time() - start_time
+                            provider_used = "openai"
+                            model_name_used = "gpt-4o-mini"
+                            print(f"✅ OpenAI respondeu em {latency:.2f}s (fallback)")
+                else:
+                    # OpenAI direto (sem timeout necessário)
+                    resultado = qa_chain.invoke({"question": message})
+                    latency = time.time() - start_time
+            else:
+                # Sem router: apenas OpenAI
+                qa_chain = self.qa_chain
                 resultado = qa_chain.invoke({"question": message})
                 latency = time.time() - start_time
-                provider_used = "openai"
-                model_name_used = "gpt-4o-mini"
             
             # Extrair resposta e documentos
             if isinstance(resultado, dict) and 'answer' in resultado:
@@ -360,7 +383,7 @@ class MelanciaWithEvaluation:
         return f"{emoji} Feedback registrado! Obrigado por nos ajudar a melhorar."
     
     def get_stats_display(self) -> str:
-        """Retorna estatísticas formatadas."""
+        """Retorna estatísticas formatadas com detalhes de latência."""
         if not self.enable_eval:
             return "⚠️ Evaluation desabilitado."
         
@@ -371,18 +394,50 @@ class MelanciaWithEvaluation:
                 "📊 **Estatísticas do Sistema**",
                 "",
                 f"📈 Total de interações: {stats.get('total_interactions', 0)}",
-                f"⏱️ Latência média: {stats.get('avg_latency', 0):.2f}s",
+                "",
+                "### ⏱️ **Latência**",
+                f"• Média geral: {stats.get('avg_latency', 0):.2f}s",
+                f"• Média (24h): {stats.get('avg_latency_24h', 0):.2f}s",
+                f"• Queries lentas (>10s): {stats.get('slow_queries_count', 0)}",
             ]
             
-            if stats.get('avg_rating'):
-                lines.append(f"⭐ Rating médio: {stats['avg_rating']:.2f}/5")
+            # Latency por provider
+            latency_by_provider = stats.get('latency_by_provider', {})
+            if latency_by_provider:
+                lines.append("\n### 🤖 **Por Modelo**")
+                for provider, provider_stats in latency_by_provider.items():
+                    emoji = "🦙" if provider == "ollama" else "🤖"
+                    lines.append(f"\n**{emoji} {provider.upper()}** ({provider_stats['count']} queries)")
+                    lines.append(f"  • Média: {provider_stats['avg']:.2f}s")
+                    lines.append(f"  • P50: {provider_stats['p50']:.2f}s | P95: {provider_stats['p95']:.2f}s")
+                    lines.append(f"  • Min: {provider_stats['min']:.2f}s | Max: {provider_stats['max']:.2f}s")
             
+            # Router stats
+            if self.use_router and hasattr(self.model_router, 'stats'):
+                router_stats = self.model_router.stats
+                lines.append("\n### 🔀 **Model Router**")
+                lines.append(f"• Fallbacks (timeout): {router_stats.get('fallbacks', 0)}")
+                
+                provider_dist = stats.get('provider_distribution', {})
+                if provider_dist:
+                    total = sum(provider_dist.values())
+                    for provider, count in provider_dist.items():
+                        pct = (count / total * 100) if total > 0 else 0
+                        emoji = "🦙" if provider == "ollama" else "🤖"
+                        lines.append(f"  {emoji} {provider}: {pct:.1f}% ({count} queries)")
+            
+            # Rating
+            if stats.get('avg_rating'):
+                lines.append(f"\n### ⭐ **Qualidade**")
+                lines.append(f"• Rating médio: {stats['avg_rating']:.2f}/5")
+            
+            # Feedback
             feedback_counts = stats.get('feedback_counts', {})
             if feedback_counts:
-                lines.append("\n**Feedback:**")
+                lines.append("\n### 📝 **Feedback**")
                 for feedback_type, count in feedback_counts.items():
                     emoji = "👍" if feedback_type == "positive" else "👎"
-                    lines.append(f"{emoji} {feedback_type}: {count}")
+                    lines.append(f"  {emoji} {feedback_type}: {count}")
             
             return "\n".join(lines)
             
@@ -406,7 +461,7 @@ class MelanciaWithEvaluation:
         """
         
         with gr.Blocks(
-            title="🍉 MelâncIA - Assistente de Marketplace",
+            title="🍉 MelancIA - Assistente de Marketplace",
             theme=gr.themes.Soft(),
             css=custom_css
         ) as interface:
@@ -417,9 +472,9 @@ class MelanciaWithEvaluation:
             
             # Header
             gr.Markdown("""
-            # 🍉 MelâncIA - Assistente de Marketplace
-            
-            **MelâncIA** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
+            # 🍉 MelancIA - Assistente de Marketplace
+
+            **MelancIA** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
             
             💡 **Dicas**: Pergunte sobre ACOS, campanhas no Mercado Livre, Product Ads, estratégias de anúncios, otimização de performance, etc.
             
@@ -525,7 +580,7 @@ class MelanciaWithEvaluation:
             # Footer
             gr.Markdown("""
             ---
-            **🍉 MelâncIA** - Transformando perguntas em estratégias de sucesso no Retail Media!
+            **🍉 MelancIA** - Transformando perguntas em estratégias de sucesso no Retail Media!
             
             🔄 Sistema de melhoria contínua baseado em feedback e métricas automáticas.
             

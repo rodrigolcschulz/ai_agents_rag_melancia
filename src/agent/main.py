@@ -17,7 +17,12 @@ def main():
     indexar_novos_markdowns(docs, str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
 
     # Etapa 3 - Criação do retriever e da cadeia de resposta
-    retriever = get_retriever(str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
+    retriever = get_retriever(
+        str(config.VECTOR_DB_DIR), 
+        config.EMBEDDING_MODEL,
+        k=config.RETRIEVER_K,
+        search_type=config.RETRIEVER_SEARCH_TYPE
+    )
     
     llm = ChatOpenAI(
         model=config.MODEL_NAME,
@@ -39,7 +44,7 @@ def main():
     )
 
     # Etapa 4 - Loop de conversa
-    print("🍉 Jou, a MelâncIA está online! Pergunte algo sobre Retail Media...")
+    print("🍉 MelancIA está online! Pergunte algo sobre Retail Media...")
     while True:
         pergunta = input("\nVocê: ")
         if pergunta.lower() in ["sair", "exit", "quit"]:
@@ -47,7 +52,7 @@ def main():
             break
 
         if not is_relevant(pergunta):
-            print("🎵 Jou: Hmm... Isso soa como um tema fora do palco do Retail Media.\n"
+            print("🎵 MelancIA: Hmm... Isso soa como um tema fora do palco do Retail Media.\n"
                   "Me pergunte sobre anúncios, performance, marketplaces, logística de e-commerce... ")
             continue
 
@@ -64,7 +69,7 @@ def main():
             # Limpar resposta de possíveis duplicações
             resposta_texto = limpar_resposta(resposta_texto)
             
-            print(f"\nJou 🍉: {resposta_texto}")
+            print(f"\nMelancIA 🍉: {resposta_texto}")
             log_file = str(config.LOG_DIR / "chat_history.txt")
             registrar_log(pergunta, resposta_texto, log_file)
             save_memory(memory, config.HISTORY_FILE)

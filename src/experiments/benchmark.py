@@ -1,407 +1,363 @@
 """
-Sistema de benchmark para comparação de diferentes LLMs
-Avalia performance, qualidade de resposta, latência e custo
+Sistema de benchmark para avaliar diferentes LLMs em tarefas de RAG.
 """
-import time
-import json
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Union
-from dataclasses import dataclass, asdict
-import pandas as pd
-from langchain_openai import ChatOpenAI
-from langchain_ollama import OllamaLLM
-from langchain_community.llms import HuggingFaceHub
-from langchain.chains import ConversationalRetrievalChain
-import logging
 
-logger = logging.getLogger(__name__)
+import time
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass, field
+from langchain.chains import ConversationalRetrievalChain
+import pandas as pd
+
+
+# Perguntas padrão para teste
+DEFAULT_TEST_QUESTIONS = [
+    "O que é ACOS e como calcular?",
+    "Como funcionam os Product Ads no Mercado Livre?",
+    "Quais são as melhores práticas para anúncios patrocinados?",
+    "Como otimizar palavras-chave para aumentar vendas?",
+    "Como melhorar a visibilidade dos anúncios?",
+]
 
 
 @dataclass
 class BenchmarkResult:
-    """Resultado de um teste de benchmark"""
-    model_name: str
+    """Resultado de benchmark para um modelo."""
     provider: str
-    question: str
-    answer: str
-    latency_seconds: float
-    tokens_used: Optional[int] = None
-    cost_usd: Optional[float] = None
-    quality_score: Optional[float] = None
-    relevance_score: Optional[float] = None
+    model_name: str
+    avg_latency: float
+    total_time: float
+    success_rate: float
+    avg_quality: float = 0.0
+    avg_relevance: float = 0.0
+    avg_tokens: int = 0
+    num_questions: int = 0
     error: Optional[str] = None
+    details: List[Dict] = field(default_factory=list)
     
-    def to_dict(self) -> Dict[str, Any]:
-        """Converte para dicionário"""
-        return asdict(self)
+    def to_dict(self) -> Dict:
+        """Converte para dicionário."""
+        return {
+            "provider": self.provider,
+            "model_name": self.model_name,
+            "avg_latency": self.avg_latency,
+            "total_time": self.total_time,
+            "success_rate": self.success_rate,
+            "avg_quality": self.avg_quality,
+            "avg_relevance": self.avg_relevance,
+            "avg_tokens": self.avg_tokens,
+            "num_questions": self.num_questions,
+            "error": self.error
+        }
 
 
 class ModelBenchmark:
-    """
-    Sistema de benchmark para avaliar diferentes LLMs
+    """Sistema de benchmark para modelos LLM."""
     
-    Exemplo:
-        benchmark = ModelBenchmark(retriever, memory)
-        
-        # Adicionar modelos para testar
-        benchmark.add_model("openai", "gpt-4o-mini")
-        benchmark.add_model("ollama", "llama3.1:8b")
-        
-        # Executar benchmark
-        results = benchmark.run(test_questions)
-        
-        # Gerar relatório
-        report = benchmark.generate_report()
-    """
-    
-    def __init__(self, retriever, memory, output_dir: str = "data/experiments"):
+    def __init__(self, retriever, memory):
         """
+        Inicializa o benchmark.
+        
         Args:
             retriever: Retriever do RAG
             memory: Memória conversacional
-            output_dir: Diretório para salvar resultados
         """
         self.retriever = retriever
         self.memory = memory
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        
-        self.models: Dict[str, tuple[str, Union[ChatOpenAI, OllamaLLM, HuggingFaceHub]]] = {}
-        self.results: List[BenchmarkResult] = []
+        self.models = {}
+        self.results = []
     
-    def add_model(self, provider: str, model_name: str, llm: Union[ChatOpenAI, OllamaLLM, HuggingFaceHub]):
+    def add_model(self, provider: str, model_name: str, llm: Any):
         """
-        Adiciona um modelo para benchmark
+        Adiciona um modelo para testar.
         
         Args:
-            provider: Nome do provedor (openai, ollama, huggingface)
+            provider: Nome do provider (openai, ollama, etc)
             model_name: Nome do modelo
             llm: Instância do LLM
         """
         key = f"{provider}::{model_name}"
-        self.models[key] = (provider, llm)
-        logger.info(f"Modelo adicionado: {key}")
+        self.models[key] = {
+            "provider": provider,
+            "model_name": model_name,
+            "llm": llm
+        }
     
     def run(
-        self,
-        test_questions: List[str],
-        evaluate_quality: bool = True,
-        verbose: bool = True
+        self, 
+        questions: List[str],
+        evaluate_quality: bool = False,
+        verbose: bool = False
     ) -> List[BenchmarkResult]:
         """
-        Executa benchmark em todos os modelos
+        Executa benchmark em todos os modelos.
         
         Args:
-            test_questions: Lista de perguntas para testar
-            evaluate_quality: Se deve avaliar qualidade das respostas
-            verbose: Se deve imprimir progresso
-            
+            questions: Lista de perguntas para testar
+            evaluate_quality: Se True, avalia qualidade das respostas
+            verbose: Se True, imprime progresso
+        
         Returns:
-            Lista de resultados
+            Lista de BenchmarkResults
         """
-        self.results = []
-        total_tests = len(self.models) * len(test_questions)
-        current = 0
+        results = []
         
-        if verbose:
-            print(f"\n{'='*60}")
-            print(f"🚀 Iniciando Benchmark: {len(self.models)} modelos x {len(test_questions)} perguntas")
-            print(f"{'='*60}\n")
-        
-        for model_key, (provider, llm) in self.models.items():
-            model_name = model_key.split("::")[1]
+        for key, model_info in self.models.items():
+            if verbose:
+                print(f"\n{'='*70}")
+                print(f"Testando: {model_info['provider']} - {model_info['model_name']}")
+                print(f"{'='*70}")
+            
+            result = self._test_model(
+                model_info['provider'],
+                model_info['model_name'],
+                model_info['llm'],
+                questions,
+                evaluate_quality,
+                verbose
+            )
+            
+            results.append(result)
             
             if verbose:
-                print(f"\n📊 Testando: {provider.upper()} - {model_name}")
-                print("-" * 60)
-            
-            # Criar cadeia RAG para este modelo
-            try:
-                qa_chain = ConversationalRetrievalChain.from_llm(
-                    llm=llm,
-                    retriever=self.retriever,
-                    memory=self.memory,
-                    return_source_documents=True,
-                    verbose=False
-                )
-            except Exception as e:
-                logger.error(f"Erro ao criar cadeia para {model_key}: {e}")
-                continue
-            
-            # Testar cada pergunta
-            for question in test_questions:
-                current += 1
-                progress = (current / total_tests) * 100
-                
-                if verbose:
-                    print(f"  [{current}/{total_tests}] {progress:.1f}% - {question[:50]}...")
-                
-                result = self._test_single_question(
-                    provider=provider,
-                    model_name=model_name,
-                    qa_chain=qa_chain,
-                    question=question,
-                    evaluate_quality=evaluate_quality
-                )
-                
-                self.results.append(result)
-                
-                if verbose and result.error:
-                    print(f"    ⚠️  Erro: {result.error}")
-                elif verbose:
-                    print(f"    ✓ Latência: {result.latency_seconds:.2f}s")
+                print(f"\nResultado: Latência média = {result.avg_latency:.2f}s")
+                print(f"Taxa de sucesso: {result.success_rate:.1%}")
         
-        if verbose:
-            print(f"\n{'='*60}")
-            print(f"✅ Benchmark concluído! {len(self.results)} testes realizados")
-            print(f"{'='*60}\n")
-        
-        # Salvar resultados
-        self._save_results()
-        
-        return self.results
+        self.results = results
+        return results
     
-    def _test_single_question(
+    def _test_model(
         self,
         provider: str,
         model_name: str,
-        qa_chain: ConversationalRetrievalChain,
-        question: str,
-        evaluate_quality: bool
+        llm: Any,
+        questions: List[str],
+        evaluate_quality: bool,
+        verbose: bool
     ) -> BenchmarkResult:
-        """Testa uma única pergunta em um modelo"""
-        start_time = time.time()
+        """Testa um modelo específico."""
+        latencies = []
+        successes = 0
+        qualities = []
+        relevances = []
+        details = []
         
+        # Criar chain para este modelo
         try:
-            # Executar pergunta
-            response = qa_chain.invoke({"question": question})
-            latency = time.time() - start_time
+            from agent.prompt import get_prompt_template
             
-            # Extrair resposta
-            answer = response.get("answer", str(response))
-            
-            # Avaliar qualidade (se solicitado)
-            quality_score = None
-            relevance_score = None
-            if evaluate_quality:
-                quality_score = self._evaluate_answer_quality(answer)
-                relevance_score = self._evaluate_relevance(question, answer)
-            
-            # Estimar tokens e custo
-            tokens = self._estimate_tokens(question, answer)
-            cost = self._estimate_cost(provider, model_name, tokens)
-            
-            return BenchmarkResult(
-                model_name=model_name,
-                provider=provider,
-                question=question,
-                answer=answer,
-                latency_seconds=latency,
-                tokens_used=tokens,
-                cost_usd=cost,
-                quality_score=quality_score,
-                relevance_score=relevance_score
+            qa_chain = ConversationalRetrievalChain.from_llm(
+                llm=llm,
+                retriever=self.retriever,
+                memory=self.memory,
+                combine_docs_chain_kwargs={
+                    "prompt": get_prompt_template(),
+                    "document_separator": "\n\n---\n\n"
+                },
+                return_source_documents=True,
+                verbose=False
             )
-            
         except Exception as e:
-            logger.error(f"Erro ao testar {model_name}: {e}")
             return BenchmarkResult(
-                model_name=model_name,
                 provider=provider,
-                question=question,
-                answer="",
-                latency_seconds=time.time() - start_time,
+                model_name=model_name,
+                avg_latency=0,
+                total_time=0,
+                success_rate=0,
+                num_questions=len(questions),
                 error=str(e)
             )
+        
+        # Testar cada pergunta
+        for i, question in enumerate(questions, 1):
+            if verbose:
+                print(f"  [{i}/{len(questions)}] {question[:50]}...")
+            
+            start_time = time.time()
+            try:
+                # Executar query
+                resultado = qa_chain.invoke({"question": question})
+                latency = time.time() - start_time
+                
+                # Extrair resposta
+                if isinstance(resultado, dict) and 'answer' in resultado:
+                    resposta = resultado['answer']
+                    source_docs = resultado.get('source_documents', [])
+                else:
+                    resposta = str(resultado)
+                    source_docs = []
+                
+                latencies.append(latency)
+                successes += 1
+                
+                # Avaliar qualidade (simplificado)
+                if evaluate_quality:
+                    quality = self._evaluate_quality(resposta)
+                    relevance = self._evaluate_relevance(question, resposta)
+                    qualities.append(quality)
+                    relevances.append(relevance)
+                
+                details.append({
+                    "question": question,
+                    "latency": latency,
+                    "success": True,
+                    "response_length": len(resposta),
+                    "num_sources": len(source_docs)
+                })
+                
+                if verbose:
+                    print(f"      ✓ {latency:.2f}s")
+                
+            except Exception as e:
+                latencies.append(0)
+                details.append({
+                    "question": question,
+                    "success": False,
+                    "error": str(e)
+                })
+                
+                if verbose:
+                    print(f"      ✗ Erro: {str(e)[:50]}")
+        
+        # Calcular métricas
+        avg_latency = sum(latencies) / len(latencies) if latencies else 0
+        total_time = sum(latencies)
+        success_rate = successes / len(questions) if questions else 0
+        avg_quality = sum(qualities) / len(qualities) if qualities else 0
+        avg_relevance = sum(relevances) / len(relevances) if relevances else 0
+        
+        return BenchmarkResult(
+            provider=provider,
+            model_name=model_name,
+            avg_latency=avg_latency,
+            total_time=total_time,
+            success_rate=success_rate,
+            avg_quality=avg_quality,
+            avg_relevance=avg_relevance,
+            num_questions=len(questions),
+            details=details
+        )
     
-    def _evaluate_answer_quality(self, answer: str) -> float:
+    def _evaluate_quality(self, response: str) -> float:
         """
-        Avalia qualidade da resposta (0-1)
-        Critérios simples: comprimento, estrutura, completude
+        Avalia qualidade da resposta (métrica simplificada).
+        
+        Args:
+            response: Resposta do modelo
+        
+        Returns:
+            Score de qualidade (0-1)
         """
-        if not answer:
+        if not response:
             return 0.0
         
         score = 0.0
         
-        # Comprimento adequado (50-500 palavras = melhor)
-        words = len(answer.split())
+        # Comprimento adequado (50-500 palavras)
+        words = len(response.split())
         if 50 <= words <= 500:
             score += 0.3
         elif words > 20:
             score += 0.15
         
-        # Tem pontuação (indica estrutura)
-        if any(p in answer for p in ['.', '!', '?']):
+        # Tem pontuação
+        if any(p in response for p in ['.', '!', '?']):
             score += 0.2
         
-        # Tem formatação (indica organização)
-        if any(f in answer for f in ['\n', '•', '-', '1.', '2.']):
+        # Tem formatação
+        if any(f in response for f in ['\n', '•', '-', '1.', '2.']):
             score += 0.2
         
         # Não é muito curto
-        if len(answer) > 100:
+        if len(response) > 100:
             score += 0.15
         
-        # Tem palavras-chave relevantes
+        # Palavras-chave relevantes
         keywords = ['retail', 'media', 'anúncio', 'campanha', 'performance', 'produto']
-        if any(kw in answer.lower() for kw in keywords):
+        if any(kw in response.lower() for kw in keywords):
             score += 0.15
         
         return min(score, 1.0)
     
-    def _evaluate_relevance(self, question: str, answer: str) -> float:
+    def _evaluate_relevance(self, question: str, response: str) -> float:
         """
-        Avalia relevância da resposta para a pergunta (0-1)
-        Heurística simples baseada em overlap de palavras-chave
+        Avalia relevância da resposta para a pergunta.
+        
+        Args:
+            question: Pergunta
+            response: Resposta
+        
+        Returns:
+            Score de relevância (0-1)
         """
-        if not answer:
+        if not response:
             return 0.0
         
-        # Extrair palavras importantes da pergunta
+        # Extrair palavras importantes
         question_words = set(question.lower().split())
-        answer_words = set(answer.lower().split())
+        response_words = set(response.lower().split())
         
-        # Remover stopwords comuns
+        # Remover stopwords
         stopwords = {'o', 'a', 'e', 'é', 'de', 'do', 'da', 'em', 'um', 'uma', 'para'}
         question_words -= stopwords
-        answer_words -= stopwords
+        response_words -= stopwords
         
         # Calcular overlap
         if not question_words:
             return 0.5
         
-        overlap = len(question_words & answer_words) / len(question_words)
+        overlap = len(question_words & response_words) / len(question_words)
         return min(overlap, 1.0)
     
-    def _estimate_tokens(self, question: str, answer: str) -> int:
-        """Estimativa simples de tokens (1 token ≈ 4 caracteres)"""
-        total_chars = len(question) + len(answer)
-        return total_chars // 4
-    
-    def _estimate_cost(self, provider: str, model_name: str, tokens: int) -> Optional[float]:
-        """Estima custo em USD baseado no provedor e modelo"""
-        if provider == "ollama":
-            return 0.0  # Local, gratuito
-        
-        if provider == "huggingface":
-            return 0.0  # API gratuita (com limites)
-        
-        if provider == "openai":
-            # Preços aproximados (input + output combinados)
-            costs_per_1k = {
-                "gpt-4o-mini": 0.00015,
-                "gpt-4o": 0.005,
-                "gpt-3.5-turbo": 0.0005,
-            }
-            cost_per_token = costs_per_1k.get(model_name, 0.0001) / 1000
-            return tokens * cost_per_token
-        
-        return None
-    
-    def _save_results(self):
-        """Salva resultados em arquivo JSON e CSV"""
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        
-        # JSON detalhado
-        json_path = self.output_dir / f"benchmark_{timestamp}.json"
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump([r.to_dict() for r in self.results], f, indent=2, ensure_ascii=False)
-        
-        # CSV para análise
-        csv_path = self.output_dir / f"benchmark_{timestamp}.csv"
-        df = pd.DataFrame([r.to_dict() for r in self.results])
-        df.to_csv(csv_path, index=False, encoding="utf-8")
-        
-        logger.info(f"Resultados salvos em: {json_path} e {csv_path}")
-    
-    def generate_report(self) -> pd.DataFrame:
-        """
-        Gera relatório comparativo dos modelos
-        
-        Returns:
-            DataFrame com métricas agregadas por modelo
-        """
-        if not self.results:
-            return pd.DataFrame()
-        
-        df = pd.DataFrame([r.to_dict() for r in self.results])
-        
-        # Agrupar por modelo
-        report = df.groupby(["provider", "model_name"]).agg({
-            "latency_seconds": ["mean", "std", "min", "max"],
-            "tokens_used": "mean",
-            "cost_usd": "sum",
-            "quality_score": "mean",
-            "relevance_score": "mean",
-            "error": lambda x: x.notna().sum()  # Contagem de erros
-        }).round(4)
-        
-        report.columns = [
-            "latency_avg", "latency_std", "latency_min", "latency_max",
-            "tokens_avg", "total_cost", "quality_avg", "relevance_avg", "errors"
-        ]
-        
-        return report.reset_index()
-    
     def print_report(self):
-        """Imprime relatório formatado no console"""
-        report = self.generate_report()
-        
-        if report.empty:
+        """Imprime relatório formatado dos resultados."""
+        if not self.results:
             print("Nenhum resultado disponível")
             return
         
         print("\n" + "="*80)
         print("📊 RELATÓRIO DE BENCHMARK")
-        print("="*80 + "\n")
+        print("="*80)
         
-        for _, row in report.iterrows():
-            print(f"🤖 {row['provider'].upper()} - {row['model_name']}")
-            print("-" * 80)
-            print(f"  ⚡ Latência:    {row['latency_avg']:.2f}s (±{row['latency_std']:.2f}s)")
-            print(f"  📝 Tokens:      {row['tokens_avg']:.0f} (média)")
-            print(f"  💰 Custo:       ${row['total_cost']:.4f}")
-            print(f"  ⭐ Qualidade:   {row['quality_avg']:.2f}/1.0")
-            print(f"  🎯 Relevância:  {row['relevance_avg']:.2f}/1.0")
-            if row['errors'] > 0:
-                print(f"  ⚠️  Erros:       {row['errors']}")
-            print()
+        # Ordenar por qualidade
+        sorted_results = sorted(self.results, key=lambda x: x.avg_quality, reverse=True)
         
-        print("="*80 + "\n")
+        print(f"\n{'Rank':<6}{'Modelo':<35}{'Latência':<12}{'Qualidade':<12}{'Sucesso':<10}")
+        print("-"*75)
         
-        # Ranking
-        print("🏆 RANKING")
-        print("-" * 80)
+        for i, r in enumerate(sorted_results, 1):
+            model_str = f"{r.provider}::{r.model_name}"[:34]
+            latency_str = f"{r.avg_latency:.2f}s"
+            quality_str = f"{r.avg_quality:.3f}"
+            success_str = f"{r.success_rate:.1%}"
+            
+            emoji = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+            print(f"{emoji:<6}{model_str:<35}{latency_str:<12}{quality_str:<12}{success_str:<10}")
         
-        # Melhor qualidade
-        best_quality = report.loc[report['quality_avg'].idxmax()]
-        print(f"  🥇 Melhor Qualidade:  {best_quality['provider']} - {best_quality['model_name']} ({best_quality['quality_avg']:.2f})")
+        print("="*80)
+    
+    def generate_report(self) -> pd.DataFrame:
+        """
+        Gera relatório em formato DataFrame.
         
-        # Mais rápido
-        best_speed = report.loc[report['latency_avg'].idxmin()]
-        print(f"  ⚡ Mais Rápido:       {best_speed['provider']} - {best_speed['model_name']} ({best_speed['latency_avg']:.2f}s)")
+        Returns:
+            DataFrame com resultados
+        """
+        if not self.results:
+            return pd.DataFrame()
         
-        # Melhor custo-benefício (qualidade / (custo + latência))
-        report['cost_benefit'] = report['quality_avg'] / (report['total_cost'] + report['latency_avg'] + 0.01)
-        best_value = report.loc[report['cost_benefit'].idxmax()]
-        print(f"  💎 Melhor Custo-Benefício: {best_value['provider']} - {best_value['model_name']}")
+        data = []
+        for r in self.results:
+            data.append({
+                "provider": r.provider,
+                "model_name": r.model_name,
+                "latency_avg": r.avg_latency,
+                "quality_avg": r.avg_quality,
+                "relevance_avg": r.avg_relevance,
+                "success_rate": r.success_rate,
+                "total_time": r.total_time,
+                "num_questions": r.num_questions,
+                "total_cost": r.avg_tokens * 0.00001 if r.provider == "openai" else 0
+            })
         
-        print("="*80 + "\n")
-
-
-# Perguntas padrão para benchmark
-DEFAULT_TEST_QUESTIONS = [
-    "O que é Retail Media?",
-    "Quais são as principais métricas de performance em campanhas de anúncios?",
-    "Como funciona o ACOS no Mercado Livre?",
-    "Quais estratégias para melhorar CTR em campanhas?",
-    "Explique a diferença entre CPC e CPM",
-]
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    print("Módulo de Benchmark carregado com sucesso!")
-    print(f"Perguntas padrão: {len(DEFAULT_TEST_QUESTIONS)}")
+        return pd.DataFrame(data)
 

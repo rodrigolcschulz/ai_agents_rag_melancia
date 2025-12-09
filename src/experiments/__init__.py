@@ -1,8 +1,8 @@
 """
 Módulo de experimentação com diferentes LLMs
 """
-from .multi_llm import MultiLLMManager
-from .benchmark import ModelBenchmark
+from .benchmark import ModelBenchmark, BenchmarkResult, DEFAULT_TEST_QUESTIONS
 
-__all__ = ["MultiLLMManager", "ModelBenchmark"]
+__all__ = ["ModelBenchmark", "BenchmarkResult", "DEFAULT_TEST_QUESTIONS"]
+
 

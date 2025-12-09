@@ -92,7 +92,44 @@ def carregar_db_existente(persist_directory, model_name=EMBEDDING_MODEL):
     db = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
     return db
 
-def get_retriever(persist_directory, model_name=EMBEDDING_MODEL, k=15):
-    """Cria um retriever a partir do banco de dados existente"""
+def get_retriever(persist_directory, model_name=EMBEDDING_MODEL, k=15, search_type="mmr"):
+    """
+    Cria um retriever a partir do banco de dados existente
+    
+    Args:
+        persist_directory: Diretório do banco vetorial
+        model_name: Modelo de embedding
+        k: Número de documentos a retornar
+        search_type: Tipo de busca - "similarity" (padrão), "mmr" (diversidade), ou "similarity_score_threshold"
+    
+    Tipos de busca:
+        - "similarity": Busca por similaridade simples (mais rápida)
+        - "mmr": Maximum Marginal Relevance - retorna documentos relevantes E diversos (melhor qualidade)
+        - "similarity_score_threshold": Filtra por threshold de similaridade
+    """
     db = carregar_db_existente(persist_directory, model_name)
-    return db.as_retriever(search_kwargs={"k": k})
+    
+    if search_type == "mmr":
+        # MMR: Balanceia relevância e diversidade
+        return db.as_retriever(
+            search_type="mmr",
+            search_kwargs={
+                "k": k,
+                "fetch_k": k * 3,  # Busca 3x mais documentos e depois filtra para diversidade
+                "lambda_mult": 0.7  # 0.7 = balanceado (0=máxima diversidade, 1=máxima relevância)
+            }
+        )
+    elif search_type == "similarity_score_threshold":
+        # Filtra documentos com score mínimo
+        return db.as_retriever(
+            search_type="similarity_score_threshold",
+            search_kwargs={
+                "k": k,
+                "score_threshold": 0.5  # Apenas documentos com 50%+ de similaridade
+            }
+        )
+    else:
+        # Busca por similaridade simples (padrão)
+        return db.as_retriever(
+            search_kwargs={"k": k}
+        )

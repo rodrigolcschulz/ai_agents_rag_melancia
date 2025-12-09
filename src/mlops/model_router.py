@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from langchain_openai import ChatOpenAI
 from langchain_ollama import OllamaLLM
 
-from src.experiments.multi_llm import MultiLLMManager
+from src.llm import MultiLLMManager  # 🔄 NOVO PATH
 from src.mlops.tracking import ExperimentTracker
 
 logger = logging.getLogger(__name__)

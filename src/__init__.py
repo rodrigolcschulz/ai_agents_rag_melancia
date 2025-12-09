@@ -1,5 +1,5 @@
 """
-MelâncIA - AI RAG Agent for Retail Media and E-commerce
+MelancIA - AI RAG Agent for Retail Media and E-commerce
 """
 
 __version__ = "1.0.0"

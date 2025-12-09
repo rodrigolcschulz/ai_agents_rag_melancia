@@ -1,6 +1,6 @@
-# 🍉 MelâncIA - Assistente de Marketplace
+# 🍉 MelancIA - Assistente de Marketplace
 
-**MelâncIA** é um agente de IA especializado em Product Ads e E-commerce, desenvolvido pela Conecta Ads.
+**MelancIA** é um agente de IA especializado em Product Ads e E-commerce, desenvolvido pela Conecta Ads.
 
 ## 🚀 Funcionalidades
 
@@ -80,20 +80,53 @@ docker compose up -d
 melancia-ai-rag/
 ├── src/
 │   ├── agent/          # Agente RAG principal
+│   │   ├── main.py              # CLI do agente
+│   │   ├── web_interface_with_eval.py  # Interface web com evaluation
+│   │   ├── config.py            # Configurações gerais
+│   │   ├── keywords.py          # 🆕 120+ keywords organizadas
+│   │   ├── retriever.py         # 🆕 Retriever com MMR
+│   │   ├── prompt.py            # Templates de prompts
+│   │   ├── memory.py            # Gestão de memória
+│   │   └── utils.py             # Funções auxiliares
+│   ├── llm/            # 🆕 Gerenciamento de LLMs
+│   │   ├── __init__.py
+│   │   └── manager.py           # MultiLLMManager (OpenAI, Ollama)
 │   ├── etl/            # Pipeline ETL
-│   ├── experiments/    # 🆕 Experimentação com LLMs
-│   │   ├── multi_llm.py      # Gerenciador de múltiplos LLMs
-│   │   ├── benchmark.py      # Sistema de benchmark
-│   │   └── run_experiments.py # Script principal
-│   └── mlops/          # 🆕 MLOps e tracking
-│       ├── tracking.py       # MLflow tracking
-│       └── registry.py       # Model registry
+│   │   ├── scraper_blog_conecta.py
+│   │   ├── analyzer.py          # Análise de conteúdo
+│   │   └── populate_vector_db.py
+│   ├── experiments/    # 🔬 Experimentação e Benchmarks
+│   │   ├── benchmark.py         # Sistema de benchmark
+│   │   ├── benchmark_models_mlflow.py  # 🆕 Benchmark com MLflow
+│   │   └── run_experiments.py   # Script principal
+│   ├── evaluation/     # 🆕 Sistema de avaliação
+│   │   ├── rag_evaluator.py     # Métricas de qualidade RAG
+│   │   └── interaction_logger.py # Log de interações
+│   ├── mlops/          # 🆕 MLOps e tracking
+│   │   ├── tracking.py          # MLflow tracking
+│   │   ├── registry.py          # Model registry
+│   │   └── model_router.py      # Roteamento Ollama/OpenAI
+│   └── monitoring/     # 🆕 Monitoramento de Performance
+│       ├── __init__.py
+│       └── latency_monitor.py   # Monitor de latência
 ├── data/
 │   ├── input/          # Arquivos markdown
+│   │   ├── blog_conecta/         # Blog da Conecta Ads
+│   │   └── central_vendedores/   # Central do Mercado Livre
 │   ├── output/         # Relatórios e análises
 │   ├── vector_db/      # Base vetorial (ChromaDB)
+│   ├── evaluation/     # 🆕 Logs de interações (SQLite)
 │   ├── experiments/    # 🆕 Resultados de benchmarks
 │   └── models/         # 🆕 Modelos treinados
+├── docs/               # Documentação detalhada
+│   ├── AGENT_ARCHITECTURE.md     # Arquitetura do agente
+│   ├── FINE_TUNING_GUIDE.md
+│   ├── EVALUATION_GUIDE.md
+│   ├── HARDWARE_SETUP.md
+│   ├── MLOPS_REPORT.md
+│   ├── MONITORING_BEST_PRACTICES.md  # 🆕 Monitoramento
+│   ├── RAG_MEMORY_VS_CACHE.md        # 🆕 Como funciona memória
+│   └── MODEL_BENCHMARK_GUIDE.md      # 🆕 Guia de benchmark
 ├── notebooks/          # 🆕 Jupyter notebooks
 │   └── experimentacao_llms.ipynb
 ├── mlruns/             # 🆕 MLflow tracking data
@@ -117,25 +150,71 @@ O MelancIA mantém um sistema completo de logs:
 
 O MelancIA utiliza uma arquitetura RAG (Retrieval-Augmented Generation) sofisticada:
 
-1. **📚 Base de Conhecimento**: Conteúdo do blog Conecta Ads em formato Markdown
-2. **🔍 Embeddings**: Transforma o conteúdo em vetores usando OpenAI embeddings
+1. **📚 Base de Conhecimento**: Conteúdo do blog Conecta Ads + Central de Vendedores do Mercado Livre
+2. **🔍 Embeddings**: Transforma o conteúdo em vetores usando OpenAI embeddings (text-embedding-3-small)
 3. **💾 Banco Vetorial**: Armazena os vetores no ChromaDB para busca rápida
-4. **🤖 LLM**: GPT-4o-mini gera respostas baseadas no contexto recuperado
-5. **🔄 Memória**: Mantém contexto das últimas 5 conversas
-6. **🎯 Filtros**: Só responde perguntas relevantes sobre Retail Media
+4. **🎯 Busca Inteligente (MMR)**: Maximum Marginal Relevance para retornar documentos relevantes E diversos
+5. **🤖 LLM**: GPT-4o-mini gera respostas baseadas no contexto recuperado
+6. **🔄 Memória**: Mantém contexto das últimas 5 conversas
+7. **🛡️ Filtros Contextuais**: Sistema de keywords para validar relevância das perguntas
+
+### 🔑 Sistema de Keywords Expandido
+
+O MelancIA agora possui mais de **120+ keywords** organizadas em categorias:
+
+- **Retail Media & Publicidade**: product ads, anúncios patrocinados, display ads
+- **Métricas**: ACOS, TACOS, ROAS, CTR, CPC, visibilidade, ranking
+- **Catálogo**: ficha técnica, características, variações, compatibilidade
+- **Categorias Específicas**: autopeças, veículos, compatibilidade
+- **Logística**: envio flex, fulfillment, ME1, mesmo dia
+- **Reputação**: avaliações, reclamações, tempo de resposta
+- **Ferramentas**: excel, editor, planilha, anunciador em massa
+- **Branding**: loja oficial, marca, INPI
+- **Financeiro**: mercado pago, crédito, taxas, custos
+- **Eventos**: black friday, sazonalidade
+
+Ver lista completa em: `src/agent/keywords.py`
+
+### ⚙️ Configurações do RAG
+
+O sistema permite ajustes finos de performance:
+
+```python
+# src/agent/config.py
+
+RETRIEVER_K = 15  # Número de documentos recuperados
+RETRIEVER_SEARCH_TYPE = "mmr"  # Tipo de busca
+# Opções: "similarity", "mmr", "similarity_score_threshold"
+```
+
+**MMR (Maximum Marginal Relevance)**: Balanceia relevância e diversidade para evitar documentos redundantes.
 
 ## 🤖 Sobre o MelancIA
 
-MelancIA é especializado em:
+MelancIA é um assistente especializado em:
+
 - **Retail Media** e estratégias de anúncios
-- **E-commerce** e marketplaces (Mercado Livre, Shopee)
-- **Métricas de performance** (ACOS, ROAS, CTR, CPC)
-- **Logística** e fulfillment
+- **E-commerce** e marketplaces (Mercado Livre, Shopee, Amazon)
+- **Product Ads** e anúncios patrocinados
+- **Métricas de performance** (ACOS, ROAS, CTR, CPC, ROI)
+- **Catálogo de produtos**: ficha técnica, características, variações
+- **Categorias específicas**: autopeças, compatibilidade de veículos
+- **Logística** e fulfillment (Envio Flex, Full, ME1)
+- **Reputação e atendimento**: mensagens, avaliações, tempo de resposta
+- **Ferramentas de gestão**: Excel, Editor, Planilha, Anunciador em Massa
 - **Análise de concorrência** e tendências
+- **Black Friday** e sazonalidade
+
+### 📊 Base de Conhecimento
+
+O assistente possui conhecimento sobre:
+- **177+ documentos** do blog Conecta Ads e Central de Vendedores
+- Conteúdo categorizado por temas (Retail Media, Logística, Catálogo, etc.)
+- Atualizações automáticas via scraping
 
 ## 🧪 Experimentação com LLMs Open Source
 
-O MelâncIA agora suporta múltiplos provedores de LLM para experimentação e comparação!
+O MelancIA agora suporta múltiplos provedores de LLM para experimentação e comparação!
 
 ### 💻 Hardware Testado
 
@@ -330,6 +409,11 @@ report = evaluator.generate_report(results)
 - [📖 Guia Completo de Fine-Tuning](docs/FINE_TUNING_GUIDE.md)
 - [📊 Guia de Evaluation Loops](docs/EVALUATION_GUIDE.md)
 - [🔬 MLOps Report](docs/MLOPS_REPORT.md)
+- [📐 Arquitetura do Agente](docs/AGENT_ARCHITECTURE.md)
+- [📊 Monitoramento e Latência - Boas Práticas](docs/MONITORING_BEST_PRACTICES.md)
+- [🧠 Memória RAG vs Cache - Como Funciona](docs/RAG_MEMORY_VS_CACHE.md)
+- [🖥️ Hardware Setup e Limitações](docs/HARDWARE_SETUP.md)
+- [🚀 Guia de Benchmark de Modelos com MLflow](docs/MODEL_BENCHMARK_GUIDE.md)
 
 ---
 

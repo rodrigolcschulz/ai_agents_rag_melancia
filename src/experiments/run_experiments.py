@@ -10,7 +10,7 @@ import argparse
 # Adicionar src ao path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.experiments.multi_llm import MultiLLMManager, LLMFactory
+from src.llm import MultiLLMManager, LLMFactory  # 🔄 NOVO PATH
 from src.experiments.benchmark import ModelBenchmark, DEFAULT_TEST_QUESTIONS
 from src.mlops.tracking import ExperimentTracker
 from src.agent.retriever import carregar_markdowns, get_retriever, indexar_novos_markdowns
