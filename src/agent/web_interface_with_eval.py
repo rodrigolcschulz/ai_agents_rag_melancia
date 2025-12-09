@@ -86,9 +86,15 @@ class MelanciaWithEvaluation:
             garantir_pasta_log(str(config.LOG_DIR))
             self.memory = get_memory(config.HISTORY_FILE)
             
-            # Indexação
-            docs = carregar_markdowns(config.INPUT_MARKDOWN)
-            indexar_novos_markdowns(docs, str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
+            # Verificar se banco vetorial existe
+            vector_db_path = Path(config.VECTOR_DB_DIR)
+            if not (vector_db_path / "chroma.sqlite3").exists():
+                print("⚠️  Banco vetorial não encontrado. Indexando documentos...")
+                docs = carregar_markdowns(config.INPUT_MARKDOWN)
+                indexar_novos_markdowns(docs, str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
+                print("✅ Indexação concluída!")
+            else:
+                print("✅ Usando banco vetorial existente")
             
             # Criação do retriever
             self.retriever = get_retriever(str(config.VECTOR_DB_DIR), config.EMBEDDING_MODEL)
@@ -400,7 +406,7 @@ class MelanciaWithEvaluation:
         """
         
         with gr.Blocks(
-            title="🍉 MelâncIA - Agente de Retail Media",
+            title="🍉 MelâncIA - Assistente de Marketplace",
             theme=gr.themes.Soft(),
             css=custom_css
         ) as interface:
@@ -411,13 +417,13 @@ class MelanciaWithEvaluation:
             
             # Header
             gr.Markdown("""
-            # 🍉 MelâncIA - Agente de Retail Media com Evaluation Loops
+            # 🍉 MelâncIA - Assistente de Marketplace
             
-            **MelancIA** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
+            **MelâncIA** está aqui para ajudar com suas dúvidas sobre Retail Media, E-commerce e Marketplaces!
             
             💡 **Dicas**: Pergunte sobre ACOS, campanhas no Mercado Livre, Product Ads, estratégias de anúncios, otimização de performance, etc.
             
-            🔄 **Novo**: Sistema de feedback integrado - ajude a melhorar as respostas!
+            ⚡ **Importante**: Evite perguntas com poucas palavras! Quanto mais contexto você fornecer, melhor o assistente consegue buscar informações relevantes na base de conhecimento.
             """)
             
             with gr.Row():
@@ -519,7 +525,7 @@ class MelanciaWithEvaluation:
             # Footer
             gr.Markdown("""
             ---
-            **🍉 MelâncIA com Evaluation Loops** - Transformando perguntas em estratégias de sucesso no Retail Media!
+            **🍉 MelâncIA** - Transformando perguntas em estratégias de sucesso no Retail Media!
             
             🔄 Sistema de melhoria contínua baseado em feedback e métricas automáticas.
             
