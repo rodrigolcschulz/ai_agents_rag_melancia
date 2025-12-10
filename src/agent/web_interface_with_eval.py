@@ -37,7 +37,7 @@ from mlops.model_router import ModelRouter, FeatureFlags
 class MelanciaWithEvaluation:
     """MelancIA com Evaluation Loops integrado."""
     
-    def __init__(self, enable_eval=True, enable_metrics_display=False, use_router=True, ollama_percentage=0.8):
+    def __init__(self, enable_eval=True, enable_metrics_display=False, use_router=False, ollama_percentage=0.0):
         """
         Inicializa a interface com evaluation.
         
@@ -46,6 +46,9 @@ class MelanciaWithEvaluation:
             enable_metrics_display: Se True, mostra métricas na resposta
             use_router: Se True, usa ModelRouter (Ollama + OpenAI), senão usa só OpenAI
             ollama_percentage: Porcentagem de queries para Ollama (0.0 a 1.0)
+            
+        NOTA: Router desabilitado por padrão. Ollama está muito lento (60-260s/query).
+              Usar apenas OpenAI até otimizar hardware/configuração.
         """
         self.qa_chain = None
         self.memory = None
@@ -594,17 +597,20 @@ def main():
     """Função principal para executar a interface web com evaluation."""
     try:
         # Configurações via variáveis de ambiente
-        use_router = os.getenv("USE_MODEL_ROUTER", "true").lower() == "true"
-        ollama_percentage = float(os.getenv("OLLAMA_PERCENTAGE", "0.8"))  # 80% padrão
+        # PADRÃO: Apenas OpenAI (Ollama muito lento: 60-260s/query)
+        use_router = os.getenv("USE_MODEL_ROUTER", "false").lower() == "true"
+        ollama_percentage = float(os.getenv("OLLAMA_PERCENTAGE", "0.0"))  # 0% padrão
         
         print("\n" + "="*60)
         print("🍉 Inicializando MelancIA RAG Agent")
         print("="*60)
         print(f"📊 Evaluation Loops: ATIVO")
-        print(f"🔀 Model Router: {'ATIVO' if use_router else 'DESATIVADO'}")
+        print(f"🤖 LLM Provider: {'Router (Ollama+OpenAI)' if use_router else 'OpenAI apenas'}")
         if use_router:
-            print(f"🦙 Ollama: {ollama_percentage*100:.0f}%")
-            print(f"🤖 OpenAI: {(1-ollama_percentage)*100:.0f}%")
+            print(f"   🦙 Ollama: {ollama_percentage*100:.0f}%")
+            print(f"   🤖 OpenAI: {(1-ollama_percentage)*100:.0f}%")
+        else:
+            print(f"   ✅ gpt-4o-mini (rápido, ~8s/query, ~$0.0004/query)")
         print("="*60 + "\n")
         
         # Criar interface com evaluation e router

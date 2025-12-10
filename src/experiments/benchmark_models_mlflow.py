@@ -244,8 +244,14 @@ def run_comprehensive_benchmark(
                     mlflow.log_metric("avg_relevance", result.avg_relevance)
                     mlflow.log_metric("questions_tested", len(questions))
                     
-                    # Estimar custo
-                    estimated_cost = result.avg_tokens * 0.00001 if provider == "openai" else 0
+                    # Estimar custo (OpenAI pricing)
+                    if provider == "openai":
+                        # gpt-4o-mini: $0.150/1M input, $0.600/1M output
+                        # Estimativa: ~1000 tokens/query (500 in, 500 out)
+                        estimated_cost = (500 * 0.150 / 1_000_000) + (500 * 0.600 / 1_000_000)
+                    else:
+                        estimated_cost = 0.0
+                    
                     mlflow.log_metric("estimated_cost_per_query", estimated_cost)
                     
                     # Log tags
@@ -307,18 +313,28 @@ def run_comprehensive_benchmark(
         print("="*70)
         
         best_quality = results_sorted[0]
-        fastest = min(results, key=lambda x: x['avg_latency'])
-        best_free = min([r for r in results if r['cost_per_query'] == 0], 
+        
+        # Mais rápido: IGNORAR modelos que falharam (latência = 0)
+        successful_results = [r for r in results if r['avg_latency'] > 0]
+        fastest = min(successful_results, key=lambda x: x['avg_latency']) if successful_results else None
+        
+        # Melhor gratuito
+        best_free = min([r for r in results if r['cost_per_query'] == 0 and r['avg_latency'] > 0], 
                        key=lambda x: -x['avg_quality'], default=None)
         
         print(f"\n🏆 Melhor qualidade: {best_quality['provider']}::{best_quality['model']}")
         print(f"   Qualidade: {best_quality['avg_quality']:.3f} | Latência: {best_quality['avg_latency']:.2f}s")
+        cost_str = f"${best_quality['cost_per_query']:.5f}" if best_quality['cost_per_query'] > 0 else "Grátis"
+        print(f"   Custo: {cost_str}/query")
         
-        print(f"\n⚡ Mais rápido: {fastest['provider']}::{fastest['model']}")
-        print(f"   Latência: {fastest['avg_latency']:.2f}s | Qualidade: {fastest['avg_quality']:.3f}")
+        if fastest:
+            print(f"\n⚡ Mais rápido: {fastest['provider']}::{fastest['model']}")
+            print(f"   Latência: {fastest['avg_latency']:.2f}s | Qualidade: {fastest['avg_quality']:.3f}")
+            cost_str = f"${fastest['cost_per_query']:.5f}" if fastest['cost_per_query'] > 0 else "Grátis"
+            print(f"   Custo: {cost_str}/query")
         
         if best_free:
-            print(f"\n💰 Melhor gratuito: {best_free['provider']}::{best_free['model']}")
+            print(f"\n💰 Melhor gratuito (open source): {best_free['provider']}::{best_free['model']}")
             print(f"   Qualidade: {best_free['avg_quality']:.3f} | Latência: {best_free['avg_latency']:.2f}s")
         
         # Salvar resultados

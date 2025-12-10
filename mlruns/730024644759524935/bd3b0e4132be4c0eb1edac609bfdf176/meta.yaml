@@ -1,0 +1,14 @@
+artifact_uri: file:///home/coneta/ai_agents_rag_melancia/mlruns/730024644759524935/bd3b0e4132be4c0eb1edac609bfdf176/artifacts
+end_time: 1765371642741
+entry_point_name: ''
+experiment_id: '730024644759524935'
+lifecycle_stage: active
+run_id: bd3b0e4132be4c0eb1edac609bfdf176
+run_name: ollama_phi3:medium
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765371642714
+status: 3
+tags: []
+user_id: coneta

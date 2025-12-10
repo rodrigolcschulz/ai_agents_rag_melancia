@@ -1,0 +1,14 @@
+artifact_uri: file:///home/coneta/ai_agents_rag_melancia/mlruns/730024644759524935/834d5521b7564d0e9cc81ce75b44564b/artifacts
+end_time: 1765371709079
+entry_point_name: ''
+experiment_id: '730024644759524935'
+lifecycle_stage: active
+run_id: 834d5521b7564d0e9cc81ce75b44564b
+run_name: openai_gpt-3.5-turbo
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765371682355
+status: 3
+tags: []
+user_id: coneta
