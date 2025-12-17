@@ -92,13 +92,13 @@ mlflow ui --port 5000
 mlflow ui --host 0.0.0.0 --port 5000
 ```
 
-Então acesse via: **http://172.16.200.49:5000**
+Então acesse via: **http://172.16.201.94:5000**
 
 ### **Solução 2: SSH Tunneling** (Mais Seguro)
 
 ```bash
 # No seu computador local:
-ssh -L 5000:localhost:5000 coneta@172.16.200.49
+ssh -L 5000:localhost:5000 coneta@172.16.201.94
 
 # Depois inicie MLflow no servidor:
 mlflow ui --port 5000

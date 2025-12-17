@@ -9,7 +9,7 @@ services:
       - PYTHONPATH=/app
       - USE_MODEL_ROUTER=false          # Router DESABILITADO - Apenas OpenAI
       - OLLAMA_PERCENTAGE=0.0           # 0% Ollama (muito lento no hardware atual)
-      # - OLLAMA_BASE_URL=http://172.16.200.49:11434  # Não usado por enquanto
+      # - OLLAMA_BASE_URL=http://172.16.201.94:11434  # Não usado por enquanto
     volumes:
       # Mount data directories for persistence
       - ./data:/app/data
